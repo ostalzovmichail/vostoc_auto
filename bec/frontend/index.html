@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ВОСТОК АВТО — автомобили из Владивостока</title>
+<meta name="description" content="Автомобили из Японии и Кореи: каталог в наличии, в пути и под заказ, архив сделок и расчёт стоимости «под ключ».">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- CSS разбит по блокам страницы, порядок подключения важен.
+     Пути абсолютные (с префиксом /ui/): страница одинаково работает
+     и по /ui, и по /ui/ — без зависимости от завершающего слэша. -->
+<link rel="stylesheet" href="/ui/css/base.css">
+<link rel="stylesheet" href="/ui/css/header.css">
+<link rel="stylesheet" href="/ui/css/hero.css">
+<link rel="stylesheet" href="/ui/css/catalog.css">
+<link rel="stylesheet" href="/ui/css/sold.css">
+<link rel="stylesheet" href="/ui/css/stats.css">
+<link rel="stylesheet" href="/ui/css/process.css">
+<link rel="stylesheet" href="/ui/css/contacts.css">
+<link rel="stylesheet" href="/ui/css/responsive.css">
+<script src="/ui/vendor/htmx.min.js" defer></script>
+<script src="/ui/js/app.js" defer></script>
+</head>
+<body>
+<div class="noise" aria-hidden="true"></div>
+
+<!-- ═══ бегущая строка порта ═══ -->
+<div class="ticker" aria-hidden="true">
+  <div class="tick-track">
+    <div class="tick-set">
+      <span>Порт Владивосток · VLAT (UTC+10)</span><span class="tick-sep">///</span>
+      <span>База пополняется ежедневно</span><span class="tick-sep">///</span>
+      <span>Аукционы USS · TAA · JU · HAA</span><span class="tick-sep">///</span>
+      <span>Морем до Владивостока: 10–14 дней</span><span class="tick-sep">///</span>
+      <span>Таможня «под ключ»: от 7 дней</span><span class="tick-sep">///</span>
+      <span>Расчёт стоимости — <b>бесплатно</b></span><span class="tick-sep">///</span>
+    </div>
+    <div class="tick-set">
+      <span>Порт Владивосток · VLAT (UTC+10)</span><span class="tick-sep">///</span>
+      <span>База пополняется ежедневно</span><span class="tick-sep">///</span>
+      <span>Аукционы USS · TAA · JU · HAA</span><span class="tick-sep">///</span>
+      <span>Морем до Владивостока: 10–14 дней</span><span class="tick-sep">///</span>
+      <span>Таможня «под ключ»: от 7 дней</span><span class="tick-sep">///</span>
+      <span>Расчёт стоимости — <b>бесплатно</b></span><span class="tick-sep">///</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ шапка ═══ -->
+<header id="hdr">
+  <div class="container hdr-in">
+    <a class="logo" href="#top">
+      <div class="logo-mark">ВА</div>
+      <div class="logo-txt"><b>ВОСТОК АВТО</b><small>Владивосток · 125 RUS</small></div>
+    </a>
+    <nav>
+      <a href="#stock">В продаже</a>
+      <a href="#sold">Проданные</a>
+      <a href="#process">Доставка</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <a class="hdr-phone" id="headerPhone" href="tel:89996832070"><span>89996832070</span></a>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ═══ ГЛАВНЫЙ АКЦЕНТ: последнее авто в базе ═══ -->
+<section class="hero" id="new">
+  <!-- htmx подставляет сюда фрагмент /partials/hero -->
+  <div class="container" id="heroBody" hx-get="/partials/hero" hx-trigger="load" hx-swap="innerHTML">
+    <span class="skeleton">Загружаем последнее поступление…</span>
+  </div>
+</section>
+
+<!-- ═══ марки ═══ -->
+<div class="brands" aria-hidden="true">
+  <div class="tick-track">
+    <div class="tick-set"><span>Toyota</span><span class="tick-sep">///</span><span>Lexus</span><span class="tick-sep">///</span><span>Nissan</span><span class="tick-sep">///</span><span>Honda</span><span class="tick-sep">///</span><span>Mazda</span><span class="tick-sep">///</span><span>Subaru</span><span class="tick-sep">///</span><span>Mitsubishi</span><span class="tick-sep">///</span><span>Suzuki</span><span class="tick-sep">///</span><span>Daihatsu</span><span class="tick-sep">///</span></div>
+    <div class="tick-set"><span>Toyota</span><span class="tick-sep">///</span><span>Lexus</span><span class="tick-sep">///</span><span>Nissan</span><span class="tick-sep">///</span><span>Honda</span><span class="tick-sep">///</span><span>Mazda</span><span class="tick-sep">///</span><span>Subaru</span><span class="tick-sep">///</span><span>Mitsubishi</span><span class="tick-sep">///</span><span>Suzuki</span><span class="tick-sep">///</span><span>Daihatsu</span><span class="tick-sep">///</span></div>
+  </div>
+</div>
+
+<!-- ═══ В ПРОДАЖЕ ═══ -->
+<section class="sec" id="stock">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <span class="sec-tag">01 / Каталог</span>
+        <h2 class="sec-h"><span class="lm"><span>Автомобили в продаже</span></span></h2>
+      </div>
+      <a class="sec-link" href="#contacts">Запросить полный список →</a>
+    </div>
+
+    <!-- Фильтры живут вне области подстановки, поэтому не сбрасываются при обновлении.
+         Одно событие change/keyup/submit на форме шлёт запрос со всеми её значениями;
+         keyup привязан к полю поиска через `from:` — модификатор `changed`
+         сравнивает значение именно того элемента, на котором висит триггер. -->
+    <form id="catalogForm" class="catalog-form rv"
+          hx-get="/partials/catalog"
+          hx-target="#carGrid"
+          hx-swap="innerHTML"
+          hx-trigger="change, submit, keyup changed delay:300ms from:.c-search">
+      <div class="filters">
+        <label class="fbtn"><input type="radio" name="status" value="" checked>Все <em id="countAll">0</em></label>
+        <label class="fbtn"><input type="radio" name="status" value="stock">В наличии <em id="countStock">0</em></label>
+        <label class="fbtn"><input type="radio" name="status" value="transit">В пути <em id="countTransit">0</em></label>
+        <label class="fbtn"><input type="radio" name="status" value="order">Под заказ <em id="countOrder">0</em></label>
+      </div>
+      <div class="catalog-tools">
+        <input class="c-search" type="search" name="q" placeholder="Поиск: марка, модель, номер лота…" autocomplete="off">
+        <select class="c-sort" name="sort">
+          <option value="new">Сначала новые</option>
+          <option value="price-asc">Цена ↑</option>
+          <option value="price-desc">Цена ↓</option>
+          <option value="mileage">Пробег ↑</option>
+        </select>
+      </div>
+    </form>
+
+    <div class="grid" id="carGrid"
+         hx-get="/partials/catalog"
+         hx-trigger="load"
+         hx-include="#catalogForm"
+         hx-swap="innerHTML">
+      <span class="skeleton">Загружаем каталог…</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ПРОДАННЫЕ ═══ -->
+<section class="sec sold-sec" id="sold">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <span class="sec-tag">02 / Архив сделок</span>
+        <h2 class="sec-h"><span class="lm"><span>Недавно проданные</span></span></h2>
+      </div>
+      <div class="sold-nav">
+        <button class="snav" id="soldPrev" type="button" aria-label="Назад">←</button>
+        <button class="snav" id="soldNext" type="button" aria-label="Вперёд">→</button>
+      </div>
+    </div>
+
+    <div class="sold-row" id="soldRow" hx-get="/partials/sold" hx-trigger="load" hx-swap="innerHTML">
+      <span class="skeleton">Загружаем архив…</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ статистика ═══ -->
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid" id="statsGrid" hx-get="/partials/stats" hx-trigger="load" hx-swap="innerHTML">
+      <span class="skeleton">Считаем статистику…</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ процесс ═══ -->
+<section class="sec" id="process">
+  <div class="container proc-grid">
+    <div class="proc-left">
+      <span class="sec-tag">03 / Как мы работаем</span>
+      <h2 class="sec-h"><span class="lm"><span>От аукциона в Японии — до вашего двора</span></span></h2>
+      <p>Полный цикл: подбор, выкуп, морская доставка во Владивосток, таможенное оформление и отправка в любой регион России. Вы видите каждый этап онлайн.</p>
+      <div class="proc-note rv"><b>Договор и фиксированная комиссия.</b> Оплата авто — только после заключения договора и выставления инвойса с аукциона. Никаких скрытых платежей.</div>
+    </div>
+    <div class="steps">
+      <div class="step rv"><div class="step-n">01</div><div><h3>Подбор и проверка</h3><p>По вашему бюджету находим 3–5 подходящих лотов на аукционах Японии и Кореи, проверяем историю, фото и аукционный лист.</p><span class="tag-m">1–2 дня</span></div></div>
+      <div class="step rv d1"><div class="step-n">02</div><div><h3>Выкуп на аукционе</h3><p>Торгуемся за вас на USS, TAA, JU и HAA. Прозрачный инвойс: цена лота + аукционный сбор + наша фиксированная комиссия.</p><span class="tag-m">день аукциона</span></div></div>
+      <div class="step rv d2"><div class="step-n">03</div><div><h3>Морская доставка</h3><p>Судно до порта Владивосток — 10–14 дней. Отслеживание груза онлайн, хранение на СВЗ, фотоотчёт по прибытии.</p><span class="tag-m">10–14 дней</span></div></div>
+      <div class="step rv d3"><div class="step-n">04</div><div><h3>Таможня и выдача</h3><p>Растаможка, утильсбор, СБКТС и ЭПТС, установка ЭРА-ГЛОНАСС. Выдача во Владивостоке или отправка в ваш регион.</p><span class="tag-m">7–10 дней</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ контакты ═══ -->
+<section class="sec contacts" id="contacts">
+  <div class="container">
+    <span class="sec-tag">04 / Связаться с нами</span>
+    <h2 class="sec-h" style="margin-bottom:44px"><span class="lm"><span>Обсудим ваш будущий автомобиль</span></span></h2>
+    <div id="contactsBody" hx-get="/partials/contacts" hx-trigger="load" hx-swap="innerHTML">
+      <span class="skeleton">Загружаем контакты…</span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container ft">
+    <a class="logo" href="#top"><div class="logo-mark" style="width:32px;height:32px;font-size:12px">ВА</div><div class="logo-txt"><b>ВОСТОК АВТО</b><small>авто из Японии и Кореи</small></div></a>
+    <small>© 2026 «Восток Авто» · Владивосток · 43°06′N 131°53′E<br>Не является публичной офертой · Политика конфиденциальности</small>
+    <small>База авто обновляется ежедневно · VLAT (UTC+10)</small>
+  </div>
+</footer>
+
+<noscript>
+  <div class="container" style="padding:20px 24px">
+    <div class="load-error">Для загрузки данных каталога нужен JavaScript (страница собирается на htmx).</div>
+  </div>
+</noscript>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% for car in cars %}
+<article class="cc rv">
+  <div class="cc-img">
+    <span class="chip {{ car.status_class() }}"><i></i>{{ car.status_label() }}</span>
+    <span class="cc-num">№ {{ car.lot_number }}</span>
+    {% if !car.cover().is_empty() %}<img src="{{ car.cover() }}" alt="{{ car.title() }}" loading="lazy">{% endif %}
+  </div>
+  <div class="cc-body">
+    <h3>{{ car.title() }}</h3>
+    <div class="cc-specs">{{ car.specs_line() }}</div>
+    <div class="cc-bottom">
+      <div class="cc-price">{{ car.price_display() }}<small>{{ car.price_note() }}</small></div>
+      <a class="cc-more" href="tel:{{ phone_tel }}">Подробнее <span class="ar">→</span></a>
+    </div>
+  </div>
+</article>
+{% endfor %}
+{% if cars.is_empty() %}
+<p class="cc-empty">Ничего не найдено — измените фильтр или поисковый запрос.</p>
+{% endif %}
+<em id="countAll" hx-swap-oob="true">{{ stats.in_stock + stats.in_transit + stats.on_order }}</em>
+<em id="countStock" hx-swap-oob="true">{{ stats.in_stock }}</em>
+<em id="countTransit" hx-swap-oob="true">{{ stats.in_transit }}</em>
+<em id="countOrder" hx-swap-oob="true">{{ stats.on_order }}</em>

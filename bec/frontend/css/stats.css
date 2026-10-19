@@ -1,0 +1,9 @@
+/* =====================================================================
+   Полоса со сводной статистикой.
+   ===================================================================== */
+
+.stats{border-bottom:1px solid var(--line);background:#FBFAF6}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.stat{background:var(--card);padding:38px 28px;text-align:left}
+.stat b{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.4vw,44px);color:var(--acc);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}

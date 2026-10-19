@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ВОСТОК АВТО — автомобили из Владивостока</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4EF; --bg2:#EFECE4; --card:#FFFFFF; --line:#E3DFD3; --line2:#C9C3B2;
+  --txt:#171A1F; --mut:#6F6A5C; --acc:#EE5A1E; --acc-d:#211008;
+  --ok:#1E9E62; --warn:#A66A00; --info:#2E7BC4; --sold:#D63A2E;
+  --shadow:0 18px 40px rgba(31,26,17,.10);
+  --disp:'Unbounded',sans-serif; --body:'Manrope',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);font-size:16px;line-height:1.6;overflow-x:hidden}
+::selection{background:var(--acc);color:#fff}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+section{scroll-margin-top:90px}
+
+/* ---------- лёгкий шум ---------- */
+.noise{position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");}
+
+.container{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* ---------- бегущая строка порта ---------- */
+.ticker{background:#ECE9DF;border-bottom:1px solid var(--line);overflow:hidden;height:36px;display:flex;align-items:center}
+.tick-track{display:flex;width:max-content;animation:tick 32s linear infinite}
+.tick-set{display:flex;align-items:center;white-space:nowrap}
+.tick-set span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);padding:0 22px}
+.tick-set b{color:var(--acc);font-weight:500}
+.tick-sep{color:var(--acc);opacity:.55;font-size:10px}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- шапка ---------- */
+header{position:sticky;top:0;z-index:50;background:rgba(246,244,239,.75);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .3s, background .3s}
+header.scrolled{border-bottom-color:var(--line);background:rgba(246,244,239,.94)}
+.hdr-in{display:flex;align-items:center;justify-content:space-between;height:72px;gap:24px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:40px;height:40px;background:var(--acc);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:15px;border-radius:3px;box-shadow:0 4px 12px rgba(238,90,30,.28)}
+.logo-txt{display:flex;flex-direction:column;line-height:1.15}
+.logo-txt b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.06em}
+.logo-txt small{font-family:var(--mono);font-size:10px;color:var(--mut);letter-spacing:.16em;text-transform:uppercase}
+nav{display:flex;gap:28px}
+nav a{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);position:relative;padding:6px 0;transition:color .25s}
+nav a::after{content:"";position:absolute;left:0;bottom:0;height:1.5px;width:0;background:var(--acc);transition:width .3s}
+nav a:hover{color:var(--txt)}
+nav a:hover::after{width:100%}
+.hdr-phone{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--txt);white-space:nowrap;transition:color .25s}
+.hdr-phone:hover{color:var(--acc)}
+.hdr-phone small{display:block;font-size:9px;color:var(--mut);letter-spacing:.14em;font-weight:400}
+
+/* ---------- hero / последнее авто ---------- */
+.hero{padding:56px 0 64px;position:relative;
+  background:
+    radial-gradient(700px 420px at 85% 0%, rgba(238,90,30,.09), transparent 65%),
+    linear-gradient(var(--bg) 0%, var(--bg2) 100%);}
+.hero-grid{display:grid;grid-template-columns:1.15fr .95fr;gap:48px;align-items:center}
+.rec-label{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:18px}
+.rec-label .dot{width:8px;height:8px;background:var(--ok);border-radius:50%;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,158,98,.45)}50%{box-shadow:0 0 0 7px rgba(30,158,98,0)}}
+.hero-frame{position:relative;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.hero-frame::before,.hero-frame::after{content:"";position:absolute;width:26px;height:26px;border:2px solid var(--acc);z-index:3}
+.hero-frame::before{top:10px;left:10px;border-right:none;border-bottom:none}
+.hero-frame::after{bottom:10px;right:10px;border-left:none;border-top:none}
+.badge-new{position:absolute;top:18px;left:18px;z-index:3;background:var(--acc);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;padding:7px 12px;border-radius:3px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px rgba(238,90,30,.35)}
+.hero-img{aspect-ratio:3/2;overflow:hidden}
+.hero-img img{width:100%;height:100%;object-fit:cover;animation:kenburns 20s ease-in-out infinite alternate}
+@keyframes kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.09) translate(-1.5%,1.5%)}}
+.hero-meta{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;flex-wrap:wrap}
+.hero-meta b{color:var(--acc);font-weight:500}
+.h-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-bottom:14px}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(26px,4vw,48px);line-height:1.12;letter-spacing:.01em;text-transform:uppercase;min-height:2.2em}
+.h-sub{color:var(--mut);font-size:15px;margin:12px 0 26px}
+.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:26px;border-radius:4px;overflow:hidden}
+.spec{background:var(--card);padding:12px 14px}
+.spec small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.spec b{font-size:14px;font-weight:700}
+.price-row{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.price{font-family:var(--disp);font-weight:800;font-size:clamp(26px,3.2vw,38px);color:var(--acc)}
+.price-note{font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.06em}
+.auction-note{font-family:var(--mono);font-size:11px;color:var(--mut);margin-bottom:26px}
+.auction-note b{color:var(--txt);font-weight:500}
+.btn-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--body);font-weight:800;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;padding:15px 24px;border-radius:3px;cursor:pointer;transition:transform .2s, background .25s, border-color .25s, color .25s, box-shadow .25s;border:1px solid transparent}
+.btn .ar{transition:transform .25s}
+.btn:hover .ar{transform:translateX(4px)}
+.btn-solid{background:var(--acc);color:#fff;box-shadow:0 6px 18px rgba(238,90,30,.28)}
+.btn-solid:hover{background:#F96B2C;transform:translateY(-2px);box-shadow:0 10px 24px rgba(238,90,30,.36)}
+.btn-ghost{border-color:var(--line2);color:var(--txt);background:var(--card)}
+.btn-ghost:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-2px)}
+.db-line{margin-top:44px;padding-top:20px;border-top:1px dashed var(--line2);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.db-line b{color:var(--txt);font-weight:500}
+
+/* ---------- марки ---------- */
+.brands{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--bg2);padding:16px 0}
+.brands .tick-track{animation-duration:26s}
+.brands span{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.14em;color:var(--mut);padding:0 26px;text-transform:uppercase;transition:color .3s}
+.brands span:hover{color:var(--acc)}
+
+/* ---------- секции ---------- */
+.sec{padding:96px 0}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:44px;flex-wrap:wrap}
+.sec-tag{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-bottom:10px;display:block}
+.sec-h{font-family:var(--disp);font-weight:800;font-size:clamp(22px,3.2vw,38px);text-transform:uppercase;line-height:1.15;overflow:hidden}
+.lm{display:block}
+.lm span{display:block;transform:translateY(115%);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.sec-h.in .lm span{transform:translateY(0)}
+.sec-link{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--line2);padding-bottom:4px;transition:color .25s,border-color .25s}
+.sec-link:hover{color:var(--acc);border-color:var(--acc)}
+
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}
+
+/* ---------- фильтры ---------- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:34px}
+.fbtn{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);background:var(--card);border:1px solid var(--line);padding:10px 18px;border-radius:3px;cursor:pointer;transition:all .25s}
+.fbtn:hover{color:var(--txt);border-color:var(--line2)}
+.fbtn.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(238,90,30,.25)}
+.fbtn em{font-style:normal;opacity:.65;margin-left:6px}
+
+/* ---------- карточки авто ---------- */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.cc{background:var(--card);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .35s,box-shadow .35s;position:relative;box-shadow:0 2px 10px rgba(31,26,17,.05)}
+.cc:hover{transform:translateY(-6px);border-color:var(--acc);box-shadow:var(--shadow)}
+.cc.hide{display:none}
+.cc.pop{animation:pop .4s ease}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.cc-img{position:relative;aspect-ratio:3/2;overflow:hidden}
+.cc-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.cc:hover .cc-img img{transform:scale(1.06)}
+.chip{position:absolute;top:12px;left:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 10px;border-radius:3px;display:flex;align-items:center;gap:7px;z-index:2;background:rgba(255,255,255,.92)}
+.chip i{width:6px;height:6px;border-radius:50%;font-style:normal}
+.chip.stock{color:var(--ok);border:1px solid rgba(30,158,98,.4)}.chip.stock i{background:var(--ok)}
+.chip.transit{color:var(--warn);border:1px solid rgba(166,106,0,.4)}.chip.transit i{background:var(--warn)}
+.chip.order{color:var(--info);border:1px solid rgba(46,123,196,.4)}.chip.order i{background:var(--info)}
+.cc-num{position:absolute;bottom:10px;right:12px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.92);letter-spacing:.1em;background:rgba(23,26,31,.55);padding:3px 8px;border-radius:2px;z-index:2}
+.cc-body{padding:18px 18px 20px}
+.cc-body h3{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.02em;text-transform:uppercase;margin-bottom:10px}
+.cc-specs{font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.04em;line-height:1.9;margin-bottom:14px;border-bottom:1px dashed var(--line2);padding-bottom:12px}
+.cc-bottom{display:flex;justify-content:space-between;align-items:center}
+.cc-price{font-family:var(--disp);font-weight:800;font-size:17px}
+.cc-price small{display:block;font-family:var(--mono);font-size:9.5px;font-weight:400;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.cc-more{font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.08em;white-space:nowrap}
+.cc-more .ar{display:inline-block;transition:transform .25s}
+.cc:hover .cc-more .ar{transform:translateX(4px)}
+
+/* ---------- проданные ---------- */
+.sold-sec{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sold-nav{display:flex;gap:10px}
+.snav{width:44px;height:44px;border:1px solid var(--line2);background:var(--card);color:var(--mut);font-size:18px;border-radius:3px;cursor:pointer;transition:all .25s}
+.snav:hover{border-color:var(--acc);color:var(--acc)}
+.sold-row{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 18px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.sold-row::-webkit-scrollbar{height:6px}
+.sold-row::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+.sold-card{position:relative;min-width:300px;max-width:300px;background:var(--card);border:1px solid var(--line);border-radius:5px;overflow:hidden;scroll-snap-align:start;transition:border-color .3s;box-shadow:0 2px 10px rgba(31,26,17,.05)}
+.sold-card:hover{border-color:var(--line2)}
+.sold-card .cc-img img{filter:grayscale(.75) contrast(.92);opacity:.85}
+.stamp{position:absolute;inset:0;display:grid;place-items:center;z-index:3;pointer-events:none}
+.stamp span{border:3px solid var(--sold);color:var(--sold);font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:.22em;padding:8px 16px 8px 22px;transform:rotate(-11deg);opacity:0;border-radius:4px;background:rgba(255,255,255,.6)}
+.sold-card.in .stamp span{animation:stampIn .45s cubic-bezier(.2,.9,.3,1.35) forwards}
+@keyframes stampIn{from{transform:rotate(-11deg) scale(2.1);opacity:0}70%{opacity:1}to{transform:rotate(-11deg) scale(1);opacity:.95}}
+.sold-info{padding:16px 18px}
+.sold-info h3{font-family:var(--disp);font-weight:600;font-size:14px;text-transform:uppercase;margin-bottom:8px}
+.sold-meta{font-family:var(--mono);font-size:10.5px;color:var(--mut);letter-spacing:.05em;line-height:1.9}
+.sold-meta b{color:var(--txt);font-weight:500}
+.sold-price{font-family:var(--disp);font-weight:800;font-size:15px;color:var(--mut);text-decoration:line-through;text-decoration-color:var(--sold);margin-top:10px}
+
+/* ---------- статистика ---------- */
+.stats{border-bottom:1px solid var(--line);background:#FBFAF6}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.stat{background:var(--card);padding:38px 28px;text-align:left}
+.stat b{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.4vw,44px);color:var(--acc);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+
+/* ---------- процесс ---------- */
+.proc-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:start}
+.proc-left{position:sticky;top:110px}
+.proc-left p{color:var(--mut);font-size:15px;margin:18px 0 26px;max-width:400px}
+.proc-note{border:1px solid var(--line);border-left:3px solid var(--acc);padding:16px 18px;font-size:13.5px;color:var(--mut);border-radius:3px;background:var(--card);box-shadow:0 2px 10px rgba(31,26,17,.05)}
+.proc-note b{color:var(--txt)}
+.steps{display:flex;flex-direction:column;gap:16px}
+.step{display:flex;gap:22px;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:24px 26px;transition:border-color .3s,transform .3s,box-shadow .3s;box-shadow:0 2px 10px rgba(31,26,17,.04)}
+.step:hover{border-color:var(--acc);transform:translateX(6px);box-shadow:0 8px 24px rgba(31,26,17,.08)}
+.step-n{font-family:var(--disp);font-weight:800;font-size:30px;color:transparent;-webkit-text-stroke:1.5px var(--acc);flex-shrink:0;line-height:1.1}
+.step h3{font-family:var(--disp);font-weight:600;font-size:15px;text-transform:uppercase;margin-bottom:8px;letter-spacing:.03em}
+.step p{color:var(--mut);font-size:13.5px;line-height:1.65}
+.step .tag-m{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);border:1px solid rgba(238,90,30,.4);background:rgba(238,90,30,.06);padding:4px 9px;border-radius:2px}
+
+/* ---------- контакты ---------- */
+.contacts{background:var(--bg2);border-top:1px solid var(--line)}
+.cnt-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:56px}
+.cnt-phone{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(24px,3vw,36px);margin:8px 0 4px;transition:color .25s}
+.cnt-phone:hover{color:var(--acc)}
+.cnt-sub{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:30px}
+.cnt-rows{display:flex;flex-direction:column;border-top:1px solid var(--line2)}
+.cnt-row{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid var(--line2);align-items:flex-start}
+.cnt-row .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);min-width:110px;padding-top:3px}
+.cnt-row .v{font-size:15px}
+.cnt-row .v small{display:block;color:var(--mut);font-size:12.5px}
+.messengers{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+.m-chip{font-family:var(--mono);font-size:12px;letter-spacing:.08em;border:1px solid var(--line2);background:var(--card);padding:11px 18px;border-radius:3px;transition:all .25s;display:inline-flex;gap:8px;align-items:center}
+.m-chip:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-2px)}
+.cnt-form{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:32px;position:relative;box-shadow:var(--shadow)}
+.cnt-form h3{font-family:var(--disp);font-weight:600;font-size:17px;text-transform:uppercase;margin-bottom:6px}
+.cnt-form>p{color:var(--mut);font-size:13.5px;margin-bottom:24px}
+.fld{margin-bottom:16px}
+.fld label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:7px}
+.fld input,.fld textarea{width:100%;background:#FBFAF6;border:1px solid var(--line2);border-radius:3px;color:var(--txt);font-family:var(--body);font-size:15px;padding:13px 14px;transition:border-color .25s, box-shadow .25s;outline:none;resize:vertical}
+.fld input:focus,.fld textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(238,90,30,.12)}
+.form-ok{display:none;text-align:center;padding:34px 10px}
+.form-ok .ico{width:56px;height:56px;border:2px solid var(--ok);border-radius:50%;display:grid;place-items:center;color:var(--ok);font-size:26px;margin:0 auto 16px}
+.form-ok h4{font-family:var(--disp);font-size:16px;text-transform:uppercase;margin-bottom:8px}
+.form-ok p{color:var(--mut);font-size:13.5px}
+.cnt-map{margin-top:26px;border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative;box-shadow:0 2px 10px rgba(31,26,17,.06)}
+.cnt-map img{width:100%;height:190px;object-fit:cover;filter:saturate(.75) brightness(1.02)}
+.cnt-map .pin{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:var(--acc);color:#fff;padding:6px 10px;border-radius:2px;font-weight:700;box-shadow:0 6px 16px rgba(238,90,30,.4)}
+.cnt-map .coords{position:absolute;bottom:10px;left:12px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.92);letter-spacing:.1em;background:rgba(23,26,31,.55);padding:4px 9px;border-radius:2px}
+
+/* ---------- подвал ---------- */
+footer{padding:38px 0;border-top:1px solid var(--line);background:var(--bg)}
+.ft{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.ft small{font-family:var(--mono);font-size:10.5px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;line-height:2}
+
+/* ---------- адаптив ---------- */
+@media(max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .proc-grid,.cnt-grid{grid-template-columns:1fr;gap:40px}
+  .proc-left{position:static}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  nav{display:none}
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .specs{grid-template-columns:repeat(2,1fr)}
+  .sec{padding:64px 0}
+  .hdr-phone{display:none}
+}
+
+/* ---------- галерея в hero ---------- */
+.hero-thumbs{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line2);overflow-x:auto}
+.hero-thumb{flex:0 0 auto;width:66px;height:48px;border:1px solid var(--line2);border-radius:4px;background-size:cover;background-position:center;cursor:pointer;padding:0;opacity:.55;transition:opacity .2s ease,border-color .2s ease}
+.hero-thumb:hover{opacity:1}
+.hero-thumb.on{opacity:1;border-color:var(--acc)}
+
+/* ---------- reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+  .lm span{transform:none}
+  .stamp span{opacity:.95}
+  .tick-track{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="noise" aria-hidden="true"></div>
+
+<!-- ═══ бегущая строка порта ═══ -->
+<div class="ticker" aria-hidden="true">
+  <div class="tick-track">
+    <div class="tick-set">
+      <span>Порт Владивосток · 16.10.2026, ПТ</span><span class="tick-sep">///</span>
+      <span>База пополнена сегодня: <b>+4 авто</b></span><span class="tick-sep">///</span>
+      <span>Аукцион USS Tokyo: <b>214 лотов</b> на этой неделе</span><span class="tick-sep">///</span>
+      <span>Морем до Владивостока: 10–14 дней</span><span class="tick-sep">///</span>
+      <span>Таможня «под ключ»: от 7 дней</span><span class="tick-sep">///</span>
+      <span>Расчёт стоимости — <b>бесплатно</b></span><span class="tick-sep">///</span>
+    </div>
+    <div class="tick-set">
+      <span>Порт Владивосток · 16.10.2026, ПТ</span><span class="tick-sep">///</span>
+      <span>База пополнена сегодня: <b>+4 авто</b></span><span class="tick-sep">///</span>
+      <span>Аукцион USS Tokyo: <b>214 лотов</b> на этой неделе</span><span class="tick-sep">///</span>
+      <span>Морем до Владивостока: 10–14 дней</span><span class="tick-sep">///</span>
+      <span>Таможня «под ключ»: от 7 дней</span><span class="tick-sep">///</span>
+      <span>Расчёт стоимости — <b>бесплатно</b></span><span class="tick-sep">///</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ шапка ═══ -->
+<header id="hdr">
+  <div class="container hdr-in">
+    <a class="logo" href="#top">
+      <div class="logo-mark">ВА</div>
+      <div class="logo-txt"><b>ВОСТОК АВТО</b><small>Владивосток · 125 RUS</small></div>
+    </a>
+    <nav>
+      <a href="#stock">В продаже</a>
+      <a href="#sold">Проданные</a>
+      <a href="#process">Доставка</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <a class="hdr-phone" id="headerPhone" href="tel:+74232904040"><span id="headerPhoneNumber">+7 (423) 290-40-40</span><small>ежедневно 10:00–19:00</small></a>
+  </div>
+</header>
+
+<main id="top">
+<!-- ═══ ГЛАВНЫЙ АКЦЕНТ: последнее авто в базе ═══ -->
+<section class="hero" id="new">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="rv">
+        <div class="hero-frame">
+          <div class="badge-new"><span style="width:7px;height:7px;background:#fff;border-radius:50%;display:inline-block"></span> ТОЛЬКО ЧТО В БАЗЕ</div>
+          <div class="hero-img">
+            <img id="heroImg" src="https://picsum.photos/seed/toyota-crown-crossover-jdm/1200/800" alt="Toyota Crown Crossover 2023">
+          </div>
+          <div class="hero-thumbs" id="heroThumbs" hidden></div>
+          <div class="hero-meta">
+            <span>ID <b id="heroLotNumber">#0247</b></span>
+            <span>Аукцион <b id="heroAuction">USS Tokyo</b></span>
+            <span>Лот <b id="heroAuctionLot">41802</b></span>
+            <span>Оценка <b id="heroRating">4.5</b></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="rec-label"><span class="dot"></span> <span id="heroLabel">Запись №0247 · добавлена сегодня в 09:40</span></div>
+        <span class="h-eyebrow">// Новинка недели</span>
+        <h1 id="scrambleTitle" data-text="TOYOTA CROWN CROSSOVER">TOYOTA CROWN CROSSOVER</h1>
+        <p class="h-sub" id="heroSub">2.5 Hybrid E-Four · правый руль · 2023 год · привезён из Японии, растаможен, на площадке во Владивостоке</p>
+        <div class="specs rv d1">
+          <div class="spec"><small>Год</small><b id="specYear">2023</b></div>
+          <div class="spec"><small>Пробег</small><b id="specMileage">18 450 км</b></div>
+          <div class="spec"><small>Двигатель</small><b id="specEngine">2.5 Hybrid</b></div>
+          <div class="spec"><small>КПП</small><b id="specTransmission">CVT</b></div>
+          <div class="spec"><small>Привод</small><b id="specDrive">E-Four</b></div>
+          <div class="spec"><small>Оценка</small><b id="specRating">4.5 / A</b></div>
+        </div>
+        <div class="price-row rv d2">
+          <div class="price" id="heroPrice">4 850 000 ₽</div>
+          <div class="price-note">цена с доставкой,<br>пошлиной и СБКТС</div>
+        </div>
+        <p class="auction-note rv d2" id="heroAuctionNote">на аукционе: <b>¥ 2 750 000</b> · экономия против рынка РФ ≈ <b>620 000 ₽</b></p>
+        <div class="btn-row rv d3">
+          <a class="btn btn-solid" href="tel:+74232904040">Узнать про это авто <span class="ar">→</span></a>
+          <a class="btn btn-ghost" href="#contacts">Хочу похожее</a>
+        </div>
+      </div>
+    </div>
+    <div class="db-line rv d4">
+      <span>В базе сейчас: <b id="dbTotal">1 247 автомобилей</b></span>
+      <span>Обновлено: <b id="dbUpdated">сегодня, 09:40 VLAT (UTC+10)</b></span>
+      <span>43°06′N · 131°53′E</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ марки ═══ -->
+<div class="brands" aria-hidden="true">
+  <div class="tick-track">
+    <div class="tick-set"><span>Toyota</span><span class="tick-sep">///</span><span>Lexus</span><span class="tick-sep">///</span><span>Nissan</span><span class="tick-sep">///</span><span>Honda</span><span class="tick-sep">///</span><span>Mazda</span><span class="tick-sep">///</span><span>Subaru</span><span class="tick-sep">///</span><span>Mitsubishi</span><span class="tick-sep">///</span><span>Suzuki</span><span class="tick-sep">///</span><span>Daihatsu</span><span class="tick-sep">///</span></div>
+    <div class="tick-set"><span>Toyota</span><span class="tick-sep">///</span><span>Lexus</span><span class="tick-sep">///</span><span>Nissan</span><span class="tick-sep">///</span><span>Honda</span><span class="tick-sep">///</span><span>Mazda</span><span class="tick-sep">///</span><span>Subaru</span><span class="tick-sep">///</span><span>Mitsubishi</span><span class="tick-sep">///</span><span>Suzuki</span><span class="tick-sep">///</span><span>Daihatsu</span><span class="tick-sep">///</span></div>
+  </div>
+</div>
+
+<!-- ═══ В ПРОДАЖЕ ═══ -->
+<section class="sec" id="stock">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <span class="sec-tag">01 / Каталог</span>
+        <h2 class="sec-h"><span class="lm"><span>Автомобили в продаже</span></span></h2>
+      </div>
+      <a class="sec-link" href="#contacts">Запросить полный список →</a>
+    </div>
+
+    <div class="filters rv">
+      <button class="fbtn on" data-f="all">Все <em>6</em></button>
+      <button class="fbtn" data-f="stock">В наличии <em>3</em></button>
+      <button class="fbtn" data-f="transit">В пути <em>2</em></button>
+      <button class="fbtn" data-f="order">Под заказ <em>1</em></button>
+    </div>
+
+    <div class="grid" id="carGrid">
+      <article class="cc rv" data-status="stock">
+        <div class="cc-img">
+          <span class="chip stock"><i></i>В наличии</span><span class="cc-num">№ 0241</span>
+          <img src="https://picsum.photos/seed/toyota-harrier-suv/640/420" alt="Toyota Harrier 2021">
+        </div>
+        <div class="cc-body">
+          <h3>Toyota Harrier</h3>
+          <div class="cc-specs">2021 · 32 000 км · 2.0 бензин · CVT · передний</div>
+          <div class="cc-bottom"><div class="cc-price">3 290 000 ₽<small>во Владивостоке</small></div><a class="cc-more" href="tel:+74232904040">Подробнее <span class="ar">→</span></a></div>
+        </div>
+      </article>
+
+      <article class="cc rv d1" data-status="transit">
+        <div class="cc-img">
+          <span class="chip transit"><i></i>В пути · 6 дней</span><span class="cc-num">№ 0238</span>
+          <img src="https://picsum.photos/seed/honda-stepwgn-minivan/640/420" alt="Honda Stepwgn 2020">
+        </div>
+        <div class="cc-body">
+          <h3>Honda Stepwgn Spada</h3>
+          <div class="cc-specs">2020 · 45 300 км · 1.5 Turbo · CVT · передний</div>
+          <div class="cc-bottom"><div class="cc-price">2 480 000 ₽<small>под выплату в пути</small></div><a class="cc-more" href="tel:+74232904040">Подробнее <span class="ar">→</span></a></div>
+        </div>
+      </article>
+
+      <article class="cc rv d2" data-status="stock">
+        <div class="cc-img">
+          <span class="chip stock"><i></i>В наличии</span><span class="cc-num">№ 0244</span>
+          <img src="https://picsum.photos/seed/nissan-xtrail-epower/640/420" alt="Nissan X-Trail 2022">
+        </div>
+        <div class="cc-body">
+          <h3>Nissan X-Trail e-POWER</h3>
+          <div class="cc-specs">2022 · 21 700 км · 1.5 гибрид · 4WD · e-4ORCE</div>
+          <div class="cc-bottom"><div class="cc-price">2 990 000 ₽<small>во Владивостоке</small></div><a class="cc-more" href="tel:+74232904040">Подробнее <span class="ar">→</span></a></div>
+        </div>
+      </article>
+
+      <article class="cc rv d3" data-status="order">
+        <div class="cc-img">
+          <span class="chip order"><i></i>Под заказ · ~45 дней</span><span class="cc-num">№ 0229</span>
+          <img src="https://picsum.photos/seed/mazda-cx5-crossover/640/420" alt="Mazda CX-5 2019">
+        </div>
+        <div class="cc-body">
+          <h3>Mazda CX-5</h3>
+          <div class="cc-specs">2019 · 58 000 км · 2.2 дизель · AT · 4WD</div>
+          <div class="cc-bottom"><div class="cc-price">2 350 000 ₽<small>расчёт «под ключ»</small></div><a class="cc-more" href="tel:+74232904040">Подробнее <span class="ar">→</span></a></div>
+        </div>
+      </article>
+
+      <article class="cc rv d4" data-status="transit">
+        <div class="cc-img">
+          <span class="chip transit"><i></i>В пути · 11 дней</span><span class="cc-num">№ 0235</span>
+          <img src="https://picsum.photos/seed/toyota-voxy-van/640/420" alt="Toyota Voxy 2021">
+        </div>
+        <div class="cc-body">
+          <h3>Toyota Voxy Kirameku</h3>
+          <div class="cc-specs">2021 · 29 800 км · 2.0 бензин · CVT · передний</div>
+          <div class="cc-bottom"><div class="cc-price">2 870 000 ₽<small>под выплату в пути</small></div><a class="cc-more" href="tel:+74232904040">Подробнее <span class="ar">→</span></a></div>
+        </div>
+      </article>
+
+      <article class="cc rv d5" data-status="stock">
+        <div class="cc-img">
+          <span class="chip stock"><i></i>В наличии</span><span class="cc-num">№ 0240</span>
+          <img src="https://picsum.photos/seed/subaru-forester-awd/640/420" alt="Subaru Forester 2020">
+        </div>
+        <div class="cc-body">
+          <h3>Subaru Forester X-Break</h3>
+          <div class="cc-specs">2020 · 41 500 км · 2.5 бензин · CVT · 4WD</div>
+          <div class="cc-bottom"><div class="cc-price">2 640 000 ₽<small>во Владивостоке</small></div><a class="cc-more" href="tel:+74232904040">Подробнее <span class="ar">→</span></a></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ПРОДАННЫЕ ═══ -->
+<section class="sec sold-sec" id="sold">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <span class="sec-tag">02 / Архив сделок</span>
+        <h2 class="sec-h"><span class="lm"><span>Недавно проданные</span></span></h2>
+      </div>
+      <div class="sold-nav">
+        <button class="snav" id="soldPrev" aria-label="Назад">←</button>
+        <button class="snav" id="soldNext" aria-label="Вперёд">→</button>
+      </div>
+    </div>
+
+    <div class="sold-row" id="soldRow">
+      <article class="sold-card rv">
+        <div class="cc-img"><img src="https://picsum.photos/seed/sold-toyota-rav4/640/420" alt="Toyota RAV4"><div class="stamp"><span>ПРОДАНО</span></div></div>
+        <div class="sold-info"><h3>Toyota RAV4 · 2020</h3>
+          <div class="sold-meta">продано <b>12.10.2026</b> · срок сделки <b>41 день</b><br>доставлено → <b>Хабаровск</b></div>
+          <div class="sold-price">2 750 000 ₽</div></div>
+      </article>
+      <article class="sold-card rv d1">
+        <div class="cc-img"><img src="https://picsum.photos/seed/sold-honda-vezel/640/420" alt="Honda Vezel"><div class="stamp"><span>ПРОДАНО</span></div></div>
+        <div class="sold-info"><h3>Honda Vezel · 2022</h3>
+          <div class="sold-meta">продано <b>05.10.2026</b> · срок сделки <b>37 дней</b><br>доставлено → <b>Новосибирск</b></div>
+          <div class="sold-price">2 390 000 ₽</div></div>
+      </article>
+      <article class="sold-card rv d2">
+        <div class="cc-img"><img src="https://picsum.photos/seed/sold-nissan-note/640/420" alt="Nissan Note"><div class="stamp"><span>ПРОДАНО</span></div></div>
+        <div class="sold-info"><h3>Nissan Note e-POWER · 2021</h3>
+          <div class="sold-meta">продано <b>28.09.2026</b> · срок сделки <b>33 дня</b><br>доставлено → <b>Иркутск</b></div>
+          <div class="sold-price">1 640 000 ₽</div></div>
+      </article>
+      <article class="sold-card rv d3">
+        <div class="cc-img"><img src="https://picsum.photos/seed/sold-toyota-aqua/640/420" alt="Toyota Aqua"><div class="stamp"><span>ПРОДАНО</span></div></div>
+        <div class="sold-info"><h3>Toyota Aqua · 2021</h3>
+          <div class="sold-meta">продано <b>21.09.2026</b> · срок сделки <b>35 дней</b><br>доставлено → <b>Южно-Сахалинск</b></div>
+          <div class="sold-price">1 380 000 ₽</div></div>
+      </article>
+      <article class="sold-card rv d4">
+        <div class="cc-img"><img src="https://picsum.photos/seed/sold-mitsubishi-outlander/640/420" alt="Mitsubishi Outlander"><div class="stamp"><span>ПРОДАНО</span></div></div>
+        <div class="sold-info"><h3>Mitsubishi Outlander · 2019</h3>
+          <div class="sold-meta">продано <b>14.09.2026</b> · срок сделки <b>47 дней</b><br>доставлено → <b>Москва</b></div>
+          <div class="sold-price">2 290 000 ₽</div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ статистика ═══ -->
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat rv"><b class="cnt" id="statTotal" data-to="1247">0</b><span>авто в базе сейчас</span></div>
+      <div class="stat rv d1"><b class="cnt" id="statSold" data-to="386">0</b><span>продано клиентам</span></div>
+      <div class="stat rv d2"><b><span class="cnt" id="statAvg" data-to="45">0</span></b><span>дней — средний срок сделки</span></div>
+      <div class="stat rv d3"><b><span class="cnt" data-to="98">0</span>%</b><span>клиентов рекомендуют нас</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ процесс ═══ -->
+<section class="sec" id="process">
+  <div class="container proc-grid">
+    <div class="proc-left">
+      <span class="sec-tag">03 / Как мы работаем</span>
+      <h2 class="sec-h"><span class="lm"><span>От аукциона в Японии — до вашего двора</span></span></h2>
+      <p>Полный цикл: подбор, выкуп, морская доставка во Владивосток, таможенное оформление и отправка в любой регион России. Вы видите каждый этап онлайн.</p>
+      <div class="proc-note rv"><b>Договор и фиксированная комиссия.</b> Оплата авто — только после заключения договора и выставления инвойса с аукциона. Никаких скрытых платежей.</div>
+    </div>
+    <div class="steps">
+      <div class="step rv"><div class="step-n">01</div><div><h3>Подбор и проверка</h3><p>По вашему бюджету находим 3–5 подходящих лотов на аукционах Японии и Кореи, проверяем историю, фото и аукционный лист.</p><span class="tag-m">1–2 дня</span></div></div>
+      <div class="step rv d1"><div class="step-n">02</div><div><h3>Выкуп на аукционе</h3><p>Торгуемся за вас на USS, TAA, JU и HAA. Прозрачный инвойс: цена лота + аукционный сбор + наша фиксированная комиссия.</p><span class="tag-m">день аукциона</span></div></div>
+      <div class="step rv d2"><div class="step-n">03</div><div><h3>Морская доставка</h3><p>Судно до порта Владивосток — 10–14 дней. Отслеживание груза онлайн, хранение на СВЗ, фотоотчёт по прибытии.</p><span class="tag-m">10–14 дней</span></div></div>
+      <div class="step rv d3"><div class="step-n">04</div><div><h3>Таможня и выдача</h3><p>Растаможка, утильсбор, СБКТС и ЭПТС, установка ЭРА-ГЛОНАСС. Выдача во Владивостоке или отправка в ваш регион.</p><span class="tag-m">7–10 дней</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ контакты ═══ -->
+<section class="sec contacts" id="contacts">
+  <div class="container">
+    <span class="sec-tag">04 / Связаться с нами</span>
+    <h2 class="sec-h" style="margin-bottom:44px"><span class="lm"><span>Обсудим ваш будущий автомобиль</span></span></h2>
+    <div class="cnt-grid">
+      <div class="rv">
+        <span class="cnt-sub">Горячая линия · звонок бесплатный</span>
+        <a class="cnt-phone" id="contactPhonePrimary" href="tel:+74232904040">+7 (423) 290-40-40</a>
+        <a class="cnt-phone" id="contactPhoneSecondary" style="font-size:clamp(18px,2vw,24px)" href="tel:+79137005533">+7 913 700-55-33</a>
+        <div class="cnt-sub" style="margin-top:14px">WhatsApp · Telegram · Viber</div>
+        <div class="cnt-rows">
+          <div class="cnt-row"><span class="k">Офис</span><div class="v"><span id="contactOffice">г. Владивосток, ул. Посьетская, 28, офис 4</span><small>район Морского вокзала, 3 минуты от причала №33</small></div></div>
+          <div class="cnt-row"><span class="k">Площадка</span><div class="v"><span id="contactStorage">СВЗ «Порт», ул. Стрельникова, 9</span><small>осмотр авто по записи, ежедневно</small></div></div>
+          <div class="cnt-row"><span class="k">Часы</span><div class="v"><span id="contactHours">Пн–Сб: 10:00 – 19:00 · Вс: по записи</span><small id="contactHoursSub">онлайн-консультации — без выходных до 22:00</small></div></div>
+          <div class="cnt-row"><span class="k">Почта</span><div class="v"><a id="contactEmail" href="mailto:sale@vostok-avto.ru" style="border-bottom:1px solid var(--line2)">sale@vostok-avto.ru</a><small>ответим в течение часа в рабочее время</small></div></div>
+          <div class="cnt-row"><span class="k">Реквизиты</span><div class="v" id="contactRequisites">ООО «Восток Авто» · ИНН 2536249881 · ОГРН 1192536027764</div></div>
+        </div>
+        <div class="messengers">
+          <a class="m-chip" id="contactWhatsapp" href="#">✆ WhatsApp</a>
+          <a class="m-chip" id="contactTelegram" href="#">✈ Telegram</a>
+          <a class="m-chip" id="contactYoutube" href="#">▶ YouTube-обзоры</a>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="cnt-form">
+          <form id="cbForm">
+            <h3>Заказать звонок</h3>
+            <p>Перезвоним в течение 15 минут и рассчитаем стоимость авто «под ключ» с доставкой в ваш город.</p>
+            <div class="fld"><label for="fname">Ваше имя</label><input id="fname" type="text" placeholder="Например, Алексей" required></div>
+            <div class="fld"><label for="fphone">Телефон</label><input id="fphone" type="tel" placeholder="+7 ___ ___-__-__" required></div>
+            <div class="fld"><label for="fwish">Какой автомобиль интересует</label><textarea id="fwish" rows="3" placeholder="Марка, год, бюджет…"></textarea></div>
+            <button class="btn btn-solid" type="submit" style="width:100%;justify-content:center">Жду звонка <span class="ar">→</span></button>
+          </form>
+          <div class="form-ok" id="formOk">
+            <div class="ico">✓</div>
+            <h4>Заявка принята</h4>
+            <p>Менеджер свяжется с вами в течение 15 минут.<br>Спасибо, что выбрали «Восток Авто»!</p>
+          </div>
+        </div>
+        <div class="cnt-map">
+          <img src="https://picsum.photos/seed/vladivostok-harbor-port/900/380" alt="Порт Владивостока">
+          <div class="pin">◉ Мы здесь</div>
+          <div class="coords">43.1155° N · 131.8855° E — Владивосток, порт</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container ft">
+    <a class="logo" href="#top"><div class="logo-mark" style="width:32px;height:32px;font-size:12px">ВА</div><div class="logo-txt"><b>ВОСТОК АВТО</b><small>авто из Японии и Кореи</small></div></a>
+    <small>© 2026 ООО «Восток Авто» · Владивосток · 43°06′N 131°53′E<br>Не является публичной офертой · Политика конфиденциальности</small>
+    <small>База авто обновляется ежедневно · 09:40 VLAT</small>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   ВОСТОК АВТО — фронтенд
+   1) Данные (последнее авто, каталог, проданные, статистика, контакты)
+      подгружаются с бэкенда (Axum + SQLite) через fetch.
+   2) Статическая разметка остаётся фолбэком: если API недоступен, сайт
+      продолжает работать на встроенных данных (progressive enhancement).
+   3) Анимации и фильтры навешиваются заново после отрисовки данных.
+
+   Адрес API по умолчанию — http://localhost:8080. Переопределяется
+   переменной window.VOSTOK_API, заданной до подключения этого скрипта.
+   ===================================================================== */
+(function(){
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const API_BASE = window.VOSTOK_API || 'http://localhost:8080';
+
+  /* ---------- утилиты ---------- */
+  const $ = id => document.getElementById(id);
+  const nf = new Intl.NumberFormat('ru-RU');
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  const money = n => nf.format(n) + ' ₽';
+  const km = n => nf.format(n) + ' км';
+  const telHref = p => 'tel:' + String(p || '').replace(/[^\d+]/g, '');
+  function plural(n, forms){
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return forms[0];
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return forms[1];
+    return forms[2];
+  }
+  // SQLite отдаёт время как "YYYY-MM-DD HH:MM:SS" в UTC — приводим к Date.
+  function parseDate(s){
+    if (!s) return null;
+    const hasZone = /[zZ]|[+-]\d\d:?\d\d$/.test(s);
+    const d = new Date(String(s).replace(' ', 'T') + (hasZone ? '' : 'Z'));
+    return isNaN(d) ? null : d;
+  }
+  const shortDate = s => { const d = parseDate(s); return d ? d.toLocaleDateString('ru-RU') : '—'; };
+  function humanTime(s){
+    const d = parseDate(s); if (!d) return 'недавно';
+    const now = new Date();
+    const hm = d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    if (d.toDateString() === now.toDateString()) return 'сегодня в ' + hm;
+    const y = new Date(now); y.setDate(now.getDate() - 1);
+    if (d.toDateString() === y.toDateString()) return 'вчера в ' + hm;
+    return d.toLocaleDateString('ru-RU');
+  }
+  function api(path){
+    return fetch(API_BASE + path, {headers:{'Accept':'application/json'}})
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+
+  // Фото бэкенд отдаёт по относительным путям вида /images/... . Абсолютный
+  // адрес (хост API) подставляем здесь: страница открыта с другого origin,
+  // поэтому «/images/...» без префикса ушло бы не туда. Полные и data:-ссылки
+  // (например, старые picsum-сиды в разметке-фолбэке) оставляем как есть.
+  function mediaUrl(u){
+    if (!u) return '';
+    if (/^(https?:)?\/\//i.test(u) || u.indexOf('data:') === 0) return u;
+    return API_BASE + (u[0] === '/' ? u : '/' + u);
+  }
+  // Обложка авто: первое фото галереи, иначе колонка image_url.
+  function coverOf(car){
+    return (car.images && car.images.length ? car.images[0] : car.image_url) || '';
+  }
+
+  /* ---------- шапка при скролле ---------- */
+  const hdr = $('hdr');
+  addEventListener('scroll', () => hdr.classList.toggle('scrolled', scrollY > 10), {passive:true});
+
+  /* ---------- scramble-декодирование заголовка ---------- */
+  const st = $('scrambleTitle');
+  let scrambleTimer = null;
+  function scrambleTitle(text){
+    if (!st || !text) return;
+    st.dataset.text = text;
+    if (RM){ st.textContent = text; return; }
+    const pool = 'ABDEHKMNPRSTUVXZ0123456789#/¥';
+    let frame = 0, revealed = 0;
+    clearInterval(scrambleTimer);
+    scrambleTimer = setInterval(() => {
+      frame++;
+      if (frame % 2 === 0) revealed++;
+      let out = '';
+      for (let i = 0; i < text.length; i++){
+        if (text[i] === ' '){ out += ' '; continue; }
+        out += i < revealed ? text[i] : pool[Math.floor(Math.random()*pool.length)];
+      }
+      st.textContent = out;
+      if (revealed >= text.length){ st.textContent = text; clearInterval(scrambleTimer); }
+    }, 34);
+  }
+  if (st) scrambleTitle(st.dataset.text || st.textContent);
+
+  /* ---------- счётчики ---------- */
+  function runCount(el){
+    if (el.dataset.done) return; el.dataset.done = 1;
+    const to = +el.dataset.to || 0;
+    if (RM){ el.textContent = nf.format(to); return; }
+    const t0 = performance.now(), dur = 1400;
+    (function tick(t){
+      const p = Math.min((t - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = nf.format(Math.round(to * e));
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+  }
+
+  /* ---------- появление элементов при скролле ---------- */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('in');
+      e.target.querySelectorAll('.cnt').forEach(runCount);
+      if (e.target.classList.contains('cnt')) runCount(e.target);
+      io.unobserve(e.target);
+    });
+  }, {threshold:.18});
+  function observe(scope){
+    (scope || document).querySelectorAll('.rv, .sec-h, .sold-card, .stat').forEach(el => io.observe(el));
+  }
+  observe();
+
+  /* ---------- фильтры каталога ----------
+     Делегирование на контейнер: обработчик не теряется, когда карточки
+     каталога перерисовываются после загрузки данных. */
+  function applyFilter(animate){
+    const active = document.querySelector('.fbtn.on');
+    const f = active ? active.dataset.f : 'all';
+    document.querySelectorAll('#carGrid .cc').forEach(c => {
+      const show = f === 'all' || c.dataset.status === f;
+      c.classList.toggle('hide', !show);
+      if (show && animate){ c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
+    });
+  }
+  const filtersBox = document.querySelector('.filters');
+  if (filtersBox){
+    filtersBox.addEventListener('click', e => {
+      const btn = e.target.closest('.fbtn');
+      if (!btn) return;
+      document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      applyFilter(true);
+    });
+  }
+
+  /* ---------- прокрутка проданных ---------- */
+  const soldRow = $('soldRow');
+  const soldPrev = $('soldPrev'), soldNext = $('soldNext');
+  if (soldRow && soldPrev && soldNext){
+    soldPrev.onclick = () => soldRow.scrollBy({left:-320, behavior: RM ? 'auto' : 'smooth'});
+    soldNext.onclick = () => soldRow.scrollBy({left: 320, behavior: RM ? 'auto' : 'smooth'});
+  }
+
+  /* ---------- форма ---------- */
+  const cbForm = $('cbForm');
+  if (cbForm){
+    cbForm.addEventListener('submit', e => {
+      e.preventDefault();
+      cbForm.style.display = 'none';
+      const okBox = $('formOk'); if (okBox) okBox.style.display = 'block';
+    });
+  }
+
+  /* =================================================================
+     Отрисовка данных, полученных с API
+  ================================================================= */
+  const STATUS = {
+    stock:   { label:'В наличии', cls:'stock',   note:'во Владивостоке' },
+    transit: { label:'В пути',    cls:'transit', note:'под выплату в пути' },
+    order:   { label:'Под заказ', cls:'order',   note:'расчёт «под ключ»' }
+  };
+  // Номер для кнопок «Подробнее»/CTA; уточняется из /api/contacts.
+  let PHONE = '+74232904040';
+
+  function chipText(car){
+    const s = STATUS[car.status] || STATUS.stock;
+    if (car.transit_days){
+      return s.label + ' · ' + (car.status === 'order' ? '~' : '') + car.transit_days + ' дн.';
+    }
+    return s.label;
+  }
+
+  /// Миниатюры под главным фото: клик переключает обложку.
+  function renderHeroThumbs(car){
+    const box = $('heroThumbs');
+    const img = $('heroImg');
+    if (!box) return;
+    const pics = (car.images && car.images.length)
+      ? car.images
+      : (car.image_url ? [car.image_url] : []);
+    if (pics.length < 2){ box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = pics.map((u, i) =>
+      '<button type="button" class="hero-thumb' + (i === 0 ? ' on' : '') + '" data-i="' + i + '"' +
+      ' style="background-image:url(\'' + esc(mediaUrl(u)) + '\')"' +
+      ' aria-label="Фото ' + (i + 1) + '"></button>'
+    ).join('');
+    box.querySelectorAll('.hero-thumb').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = pics[+btn.dataset.i];
+        if (img && u) img.src = mediaUrl(u);
+        box.querySelectorAll('.hero-thumb').forEach(b => b.classList.toggle('on', b === btn));
+      });
+    });
+  }
+
+  function renderHero(car){
+    const img = $('heroImg');
+    const alt = car.brand + ' ' + car.model + ' ' + car.year;
+    if (img){
+      const cover = coverOf(car);
+      if (cover){ img.src = mediaUrl(cover); img.alt = alt; }
+    }
+    renderHeroThumbs(car);
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set('heroLotNumber', '#' + car.lot_number);
+    set('heroAuction', car.auction_name || '—');
+    set('heroAuctionLot', car.auction_lot || '—');
+    set('heroRating', car.rating || '—');
+    set('heroLabel', 'Запись №' + car.lot_number + ' · добавлена ' + humanTime(car.created_at));
+    set('heroSub', [car.engine, car.drive, car.year + ' год'].join(' · ') +
+      ' · привезён из Японии, растаможен, на площадке во Владивостоке');
+    set('specYear', car.year);
+    set('specMileage', km(car.mileage));
+    set('specEngine', car.engine);
+    set('specTransmission', car.transmission);
+    set('specDrive', car.drive);
+    set('specRating', car.rating ? car.rating + ' / A' : '—');
+    set('heroPrice', money(car.price_rub));
+    scrambleTitle((car.brand + ' ' + car.model).toUpperCase());
+
+    const note = $('heroAuctionNote');
+    if (note){
+      if (car.auction_price_yen){
+        note.innerHTML = 'на аукционе: <b>¥ ' + nf.format(car.auction_price_yen) + '</b>';
+        note.style.display = '';
+      } else {
+        note.style.display = 'none';
+      }
+    }
+  }
+
+  function renderCatalog(cars){
+    const grid = $('carGrid');
+    if (!grid) return;
+    grid.innerHTML = cars.map((car, i) => {
+      const s = STATUS[car.status] || STATUS.stock;
+      const delay = (i > 0 && i <= 5) ? ' d' + i : '';
+      const cover = mediaUrl(coverOf(car));
+      return '<article class="cc rv' + delay + '" data-status="' + esc(car.status) + '">' +
+        '<div class="cc-img">' +
+          '<span class="chip ' + s.cls + '"><i></i>' + esc(chipText(car)) + '</span>' +
+          '<span class="cc-num">№ ' + esc(car.lot_number) + '</span>' +
+          (cover ? '<img src="' + esc(cover) + '" alt="' + esc(car.brand + ' ' + car.model + ' ' + car.year) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
+        '</div>' +
+        '<div class="cc-body">' +
+          '<h3>' + esc(car.brand) + ' ' + esc(car.model) + '</h3>' +
+          '<div class="cc-specs">' + car.year + ' · ' + km(car.mileage) + ' · ' + esc(car.engine) + ' · ' + esc(car.transmission) + ' · ' + esc(car.drive) + '</div>' +
+          '<div class="cc-bottom"><div class="cc-price">' + money(car.price_rub) + '<small>' + esc(s.note) + '</small></div>' +
+            '<a class="cc-more" href="' + telHref(PHONE) + '">Подробнее <span class="ar">→</span></a></div>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+
+    // счётчики у кнопок фильтра
+    const counts = { all: cars.length, stock: 0, transit: 0, order: 0 };
+    cars.forEach(c => { if (counts[c.status] != null) counts[c.status] += 1; });
+    document.querySelectorAll('.fbtn').forEach(btn => {
+      const em = btn.querySelector('em');
+      if (em && counts[btn.dataset.f] != null) em.textContent = counts[btn.dataset.f];
+    });
+
+    observe(grid);
+    applyFilter(false);
+  }
+
+  function renderSold(cars){
+    const row = $('soldRow');
+    if (!row) return;
+    row.innerHTML = cars.map((car, i) => {
+      const delay = (i > 0 && i <= 5) ? ' d' + i : '';
+      const cover = mediaUrl(coverOf(car));
+      const meta = 'продано <b>' + esc(shortDate(car.sold_at)) + '</b>' +
+        (car.deal_duration_days ? ' · срок сделки <b>' + car.deal_duration_days + ' дн.</b>' : '') +
+        '<br>' + (car.delivery_city ? 'доставлено → <b>' + esc(car.delivery_city) + '</b>' : 'доставлено клиенту');
+      return '<article class="sold-card rv' + delay + '">' +
+        '<div class="cc-img">' + (cover ? '<img src="' + esc(cover) + '" alt="' + esc(car.brand + ' ' + car.model) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
+          '<div class="stamp"><span>ПРОДАНО</span></div></div>' +
+        '<div class="sold-info"><h3>' + esc(car.brand) + ' ' + esc(car.model) + ' · ' + car.year + '</h3>' +
+          '<div class="sold-meta">' + meta + '</div>' +
+          '<div class="sold-price">' + money(car.price_rub) + '</div></div>' +
+      '</article>';
+    }).join('');
+    observe(row);
+  }
+
+  function renderStats(stats, sold){
+    const set = (id, v) => { const el = $(id); if (el) el.dataset.to = String(v); };
+    set('statTotal', stats.total);
+    set('statSold', stats.sold);
+    const durs = (sold || []).map(c => c.deal_duration_days).filter(v => typeof v === 'number');
+    set('statAvg', durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0);
+
+    // перезапускаем счётчики уже с реальными значениями
+    document.querySelectorAll('.stat').forEach(block => {
+      block.querySelectorAll('.cnt').forEach(c => delete c.dataset.done);
+      io.observe(block);
+    });
+
+    const totalEl = $('dbTotal');
+    if (totalEl) totalEl.textContent = nf.format(stats.total) + ' ' + plural(stats.total, ['автомобиль', 'автомобиля', 'автомобилей']);
+    const upd = $('dbUpdated');
+    if (upd) upd.textContent = 'данные получены только что';
+  }
+
+  function renderContacts(c){
+    PHONE = c.phone_primary || PHONE;
+    const primary = $('contactPhonePrimary');
+    if (primary){ primary.textContent = c.phone_primary; primary.href = telHref(c.phone_primary); }
+    const secondary = $('contactPhoneSecondary');
+    if (secondary){
+      if (c.phone_secondary){ secondary.textContent = c.phone_secondary; secondary.href = telHref(c.phone_secondary); secondary.style.display = ''; }
+      else { secondary.style.display = 'none'; }
+    }
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set('contactOffice', c.office_address);
+    set('contactStorage', c.storage_address);
+    set('contactHours', c.working_hours);
+    set('contactHoursSub', 'онлайн-консультации — ' + c.online_hours);
+    set('contactRequisites', c.company_name + ' · ИНН ' + c.inn + ' · ОГРН ' + c.ogrn);
+    const mail = $('contactEmail');
+    if (mail){ mail.textContent = c.email; mail.href = 'mailto:' + c.email; }
+    const hp = $('headerPhone'), hpn = $('headerPhoneNumber');
+    if (hpn) hpn.textContent = c.phone_primary;
+    if (hp) hp.href = telHref(c.phone_primary);
+    const wa = $('contactWhatsapp');
+    if (wa && c.whatsapp) wa.href = 'https://wa.me/' + String(c.whatsapp).replace(/\D/g, '');
+    const tg = $('contactTelegram');
+    if (tg && c.telegram) tg.href = 'https://t.me/' + String(c.telegram).replace(/^@/, '');
+    const yt = $('contactYoutube');
+    if (yt && c.youtube) yt.href = c.youtube;
+    // прочие tel-ссылки (CTA в hero и карточках) — на основной номер;
+    // вторичный номер не трогаем, у него своя ссылка.
+    document.querySelectorAll('a[href^="tel:"]').forEach(a => {
+      if (a.id !== 'contactPhoneSecondary') a.href = telHref(PHONE);
+    });
+  }
+
+  /* ---------- загрузка данных ---------- */
+  api('/api/cars/latest').then(renderHero).catch(() => {});
+  api('/api/cars').then(renderCatalog).catch(() => {});
+  const soldPromise = api('/api/cars/sold');
+  soldPromise.then(renderSold).catch(() => {});
+  Promise.all([api('/api/stats'), soldPromise.catch(() => [])])
+    .then(([stats, sold]) => renderStats(stats, sold))
+    .catch(() => {});
+  api('/api/contacts').then(renderContacts).catch(() => {});
+})();
+</script>
+</body>
+</html>

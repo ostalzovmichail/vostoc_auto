@@ -1,0 +1,16 @@
+{% for car in cars %}
+<article class="sold-card rv">
+  <div class="cc-img">
+    {% if !car.cover().is_empty() %}<img src="{{ car.cover() }}" alt="{{ car.title() }}" loading="lazy">{% endif %}
+    <div class="stamp"><span>ПРОДАНО</span></div>
+  </div>
+  <div class="sold-info">
+    <h3>{{ car.title_with_year() }}</h3>
+    <div class="sold-meta">продано <b>{{ car.sold_date_display() }}</b>{% if car.deal_duration_days.is_some() %} · срок сделки <b>{{ car.deal_duration_display() }}</b>{% endif %}<br>доставлено → <b>{{ car.delivery_city_display() }}</b></div>
+    <div class="sold-price">{{ car.price_display() }}</div>
+  </div>
+</article>
+{% endfor %}
+{% if cars.is_empty() %}
+<p class="cc-empty">Проданных автомобилей пока нет.</p>
+{% endif %}

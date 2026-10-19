@@ -1,0 +1,53 @@
+<div class="hero-grid">
+  <div class="rv">
+    <div class="hero-frame">
+      <div class="badge-new"><span class="badge-dot"></span> ТОЛЬКО ЧТО В БАЗЕ</div>
+      <div class="hero-img">
+        <img id="heroImg" src="{{ car.cover() }}" alt="{{ car.title() }}">
+      </div>
+      {% if car.images.len() > 1 %}
+      <div class="hero-thumbs" id="heroThumbs">
+        {% for img in car.images %}
+        <button type="button" class="hero-thumb{% if loop.first %} on{% endif %}" data-src="{{ img }}" style="background-image:url('{{ img }}')" aria-label="Фото {{ loop.index }}"></button>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="hero-meta">
+        <span>ID <b>#{{ car.lot_number }}</b></span>
+        <span>Аукцион <b>{{ car.auction_name_display() }}</b></span>
+        <span>Лот <b>{{ car.auction_lot_display() }}</b></span>
+        <span>Оценка <b>{{ car.rating_short() }}</b></span>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="rec-label"><span class="dot"></span> <span>Запись №{{ car.lot_number }} · добавлена {{ car.created_display() }}</span></div>
+    <span class="h-eyebrow">// Новинка недели</span>
+    <h1 id="scrambleTitle" data-text="{{ car.title() }}">{{ car.title() }}</h1>
+    <p class="h-sub">{{ car.hero_sub() }}</p>
+    <div class="specs rv d1">
+      <div class="spec"><small>Год</small><b>{{ car.year }}</b></div>
+      <div class="spec"><small>Пробег</small><b>{{ car.mileage_display() }}</b></div>
+      <div class="spec"><small>Двигатель</small><b>{{ car.engine }}</b></div>
+      <div class="spec"><small>КПП</small><b>{{ car.transmission }}</b></div>
+      <div class="spec"><small>Привод</small><b>{{ car.drive }}</b></div>
+      <div class="spec"><small>Оценка</small><b>{{ car.rating_display() }}</b></div>
+    </div>
+    <div class="price-row rv d2">
+      <div class="price">{{ car.price_display() }}</div>
+      <div class="price-note">цена с доставкой,<br>пошлиной и СБКТС</div>
+    </div>
+    {% if car.auction_price_yen.is_some() %}
+    <p class="auction-note rv d2">на аукционе: <b>{{ car.auction_price_display() }}</b></p>
+    {% endif %}
+    <div class="btn-row rv d3">
+      <a class="btn btn-solid" href="tel:{{ phone_tel }}">Узнать про это авто <span class="ar">→</span></a>
+      <a class="btn btn-ghost" href="#contacts">Хочу похожее</a>
+    </div>
+  </div>
+</div>
+<div class="db-line rv d4">
+  <span>В базе сейчас: <b>{{ total }} авто</b></span>
+  <span>Обновлено: <b>{{ updated }}</b></span>
+  <span>43°06′N · 131°53′E</span>
+</div>
