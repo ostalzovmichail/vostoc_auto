@@ -1,0 +1,56 @@
+/* =====================================================================
+   Главный акцент: последнее авто, спецификация, цена, галерея.
+   ===================================================================== */
+
+.hero{padding:56px 0 64px;position:relative;
+  background:
+    radial-gradient(700px 420px at 85% 0%, rgba(238,90,30,.09), transparent 65%),
+    linear-gradient(var(--bg) 0%, var(--bg2) 100%);}
+.hero-grid{display:grid;grid-template-columns:1.15fr .95fr;gap:48px;align-items:center}
+.rec-label{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:18px}
+.rec-label .dot{width:8px;height:8px;background:var(--ok);border-radius:50%;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,158,98,.45)}50%{box-shadow:0 0 0 7px rgba(30,158,98,0)}}
+.hero-frame{position:relative;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.hero-frame::before,.hero-frame::after{content:"";position:absolute;width:26px;height:26px;border:2px solid var(--acc);z-index:3}
+.hero-frame::before{top:10px;left:10px;border-right:none;border-bottom:none}
+.hero-frame::after{bottom:10px;right:10px;border-left:none;border-top:none}
+.badge-new{position:absolute;top:18px;left:18px;z-index:3;background:var(--acc);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;padding:7px 12px;border-radius:3px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px rgba(238,90,30,.35)}
+.badge-dot{width:7px;height:7px;background:#fff;border-radius:50%;display:inline-block}
+.hero-img{aspect-ratio:3/2;overflow:hidden}
+.hero-img img{width:100%;height:100%;object-fit:cover;animation:kenburns 20s ease-in-out infinite alternate}
+@keyframes kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.09) translate(-1.5%,1.5%)}}
+.hero-meta{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;flex-wrap:wrap}
+.hero-meta b{color:var(--acc);font-weight:500}
+.h-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-bottom:14px}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(26px,4vw,48px);line-height:1.12;letter-spacing:.01em;text-transform:uppercase;min-height:2.2em}
+.h-sub{color:var(--mut);font-size:15px;margin:12px 0 26px}
+.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:26px;border-radius:4px;overflow:hidden}
+.spec{background:var(--card);padding:12px 14px}
+.spec small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.spec b{font-size:14px;font-weight:700}
+.price-row{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.price{font-family:var(--disp);font-weight:800;font-size:clamp(26px,3.2vw,38px);color:var(--acc)}
+.price-note{font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.06em}
+.auction-note{font-family:var(--mono);font-size:11px;color:var(--mut);margin-bottom:26px}
+.auction-note b{color:var(--txt);font-weight:500}
+.btn-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--body);font-weight:800;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;padding:15px 24px;border-radius:3px;cursor:pointer;transition:transform .2s, background .25s, border-color .25s, color .25s, box-shadow .25s;border:1px solid transparent}
+.btn .ar{transition:transform .25s}
+.btn:hover .ar{transform:translateX(4px)}
+.btn-solid{background:var(--acc);color:#fff;box-shadow:0 6px 18px rgba(238,90,30,.28)}
+.btn-solid:hover{background:#F96B2C;transform:translateY(-2px);box-shadow:0 10px 24px rgba(238,90,30,.36)}
+.btn-ghost{border-color:var(--line2);color:var(--txt);background:var(--card)}
+.btn-ghost:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-2px)}
+.db-line{margin-top:44px;padding-top:20px;border-top:1px dashed var(--line2);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.db-line b{color:var(--txt);font-weight:500}
+
+/* ---------- галерея в hero ---------- */
+.hero-thumbs{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line2);overflow-x:auto}
+.hero-thumb{flex:0 0 auto;width:66px;height:48px;border:1px solid var(--line2);border-radius:4px;background-size:cover;background-position:center;cursor:pointer;padding:0;opacity:.55;transition:opacity .2s ease,border-color .2s ease}
+.hero-thumb:hover{opacity:1}
+.hero-thumb.on{opacity:1;border-color:var(--acc)}
+
+/* =====================================================================
+   Скелетон, пока htmx грузит фрагмент.
+   ===================================================================== */
+.skeleton{display:block;color:var(--mut);font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding:40px 0}

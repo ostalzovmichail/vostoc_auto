@@ -1,0 +1,53 @@
+/* =====================================================================
+   Каталог: бегущая строка марок, фильтры, поиск/сортировка и карточки.
+   ===================================================================== */
+
+/* ---------- марки ---------- */
+.brands{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--bg2);padding:16px 0}
+.brands .tick-track{animation-duration:26s}
+.brands span{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.14em;color:var(--mut);padding:0 26px;text-transform:uppercase;transition:color .3s}
+.brands span:hover{color:var(--acc)}
+
+/* ---------- форма фильтров ---------- */
+.catalog-form{display:flex;flex-direction:column;gap:14px;margin-bottom:34px}
+.filters{display:flex;gap:10px;flex-wrap:wrap}
+.fbtn{position:relative;display:inline-flex;align-items:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);background:var(--card);border:1px solid var(--line);padding:10px 18px;border-radius:3px;cursor:pointer;transition:all .25s}
+.fbtn:hover{color:var(--txt);border-color:var(--line2)}
+/* Радио управляет состоянием, но визуально его заменяет сам label. */
+.fbtn input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.fbtn:has(input:checked){background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(238,90,30,.25)}
+.fbtn em{font-style:normal;opacity:.65;margin-left:6px}
+.fbtn:has(input:checked) em{opacity:.9}
+.fbtn:focus-within{outline:2px solid var(--acc);outline-offset:2px}
+
+.catalog-tools{display:flex;gap:12px;flex-wrap:wrap}
+.c-search{flex:1 1 280px;min-width:220px;background:var(--card);border:1px solid var(--line);border-radius:3px;padding:12px 16px;font-family:var(--body);font-size:14px;color:var(--txt);outline:none;transition:border-color .25s,box-shadow .25s}
+.c-search::placeholder{color:var(--mut)}
+.c-search:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(238,90,30,.12)}
+.c-sort{flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:3px;padding:12px 14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);cursor:pointer;outline:none}
+.c-sort:focus{border-color:var(--acc)}
+
+/* ---------- карточки авто ---------- */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.cc{background:var(--card);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .35s,box-shadow .35s;position:relative;box-shadow:0 2px 10px rgba(31,26,17,.05)}
+.cc:hover{transform:translateY(-6px);border-color:var(--acc);box-shadow:var(--shadow)}
+.cc.pop{animation:pop .4s ease}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.cc-img{position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--bg2)}
+.cc-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.cc:hover .cc-img img{transform:scale(1.06)}
+.chip{position:absolute;top:12px;left:12px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 10px;border-radius:3px;display:flex;align-items:center;gap:7px;z-index:2;background:rgba(255,255,255,.92)}
+.chip i{width:6px;height:6px;border-radius:50%;font-style:normal}
+.chip.stock{color:var(--ok);border:1px solid rgba(30,158,98,.4)}.chip.stock i{background:var(--ok)}
+.chip.transit{color:var(--warn);border:1px solid rgba(166,106,0,.4)}.chip.transit i{background:var(--warn)}
+.chip.order{color:var(--info);border:1px solid rgba(46,123,196,.4)}.chip.order i{background:var(--info)}
+.cc-num{position:absolute;bottom:10px;right:12px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.92);letter-spacing:.1em;background:rgba(23,26,31,.55);padding:3px 8px;border-radius:2px;z-index:2}
+.cc-body{padding:18px 18px 20px}
+.cc-body h3{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.02em;text-transform:uppercase;margin-bottom:10px}
+.cc-specs{font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.04em;line-height:1.9;margin-bottom:14px;border-bottom:1px dashed var(--line2);padding-bottom:12px}
+.cc-bottom{display:flex;justify-content:space-between;align-items:center}
+.cc-price{font-family:var(--disp);font-weight:800;font-size:17px}
+.cc-price small{display:block;font-family:var(--mono);font-size:9.5px;font-weight:400;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.cc-more{font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.08em;white-space:nowrap}
+.cc-more .ar{display:inline-block;transition:transform .25s}
+.cc:hover .cc-more .ar{transform:translateX(4px)}

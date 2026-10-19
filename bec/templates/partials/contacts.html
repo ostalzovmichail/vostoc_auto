@@ -1,0 +1,53 @@
+<div class="cnt-grid">
+  <div class="rv">
+    <span class="cnt-sub">Телефон для связи</span>
+    <a class="cnt-phone" href="tel:{{ contact.phone_primary_tel() }}">{{ contact.phone_primary }}</a>
+    {% if contact.has_secondary_phone() %}
+    <a class="cnt-phone cnt-phone-sm" href="tel:{{ contact.phone_secondary_tel() }}">{{ contact.phone_secondary_display() }}</a>
+    {% endif %}
+    {% if contact.has_details() %}
+    <div class="cnt-rows">
+      {% if contact.has_office_address() %}
+      <div class="cnt-row"><span class="k">Офис</span><div class="v"><span>{{ contact.office_address }}</span></div></div>
+      {% endif %}
+      {% if contact.has_storage_address() %}
+      <div class="cnt-row"><span class="k">Площадка</span><div class="v"><span>{{ contact.storage_address }}</span></div></div>
+      {% endif %}
+      {% if contact.has_working_hours() %}
+      <div class="cnt-row"><span class="k">Часы</span><div class="v"><span>{{ contact.working_hours }}</span>{% if !contact.online_hours.is_empty() %}<small>{{ contact.online_hours }}</small>{% endif %}</div></div>
+      {% endif %}
+      {% if contact.has_email() %}
+      <div class="cnt-row"><span class="k">Почта</span><div class="v"><a class="link-underline" href="mailto:{{ contact.email }}">{{ contact.email }}</a></div></div>
+      {% endif %}
+      {% if contact.has_requisites() %}
+      <div class="cnt-row"><span class="k">Реквизиты</span><div class="v">{{ contact.company_name }}{% if !contact.inn.is_empty() %} · ИНН {{ contact.inn }}{% endif %}{% if !contact.ogrn.is_empty() %} · ОГРН {{ contact.ogrn }}{% endif %}</div></div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if contact.has_whatsapp() || contact.has_telegram() || contact.has_youtube() %}
+    <div class="messengers">
+      {% if contact.has_whatsapp() %}<a class="m-chip" href="{{ contact.whatsapp_href() }}">✆ WhatsApp</a>{% endif %}
+      {% if contact.has_telegram() %}<a class="m-chip" href="{{ contact.telegram_href() }}">✈ Telegram</a>{% endif %}
+      {% if contact.has_youtube() %}<a class="m-chip" href="{{ contact.youtube_href() }}">▶ YouTube-обзоры</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="rv d2">
+    <div class="cnt-form">
+      <form id="cbForm">
+        <h3>Заказать звонок</h3>
+        <p>Перезвоним в течение 15 минут и рассчитаем стоимость авто «под ключ» с доставкой в ваш город.</p>
+        <div class="fld"><label for="fname">Ваше имя</label><input id="fname" type="text" placeholder="Например, Алексей" required></div>
+        <div class="fld"><label for="fphone">Телефон</label><input id="fphone" type="tel" placeholder="+7 ___ ___-__-__" required></div>
+        <div class="fld"><label for="fwish">Какой автомобиль интересует</label><textarea id="fwish" rows="3" placeholder="Марка, год, бюджет…"></textarea></div>
+        <button class="btn btn-solid btn-block" type="submit">Жду звонка <span class="ar">→</span></button>
+      </form>
+      <div class="form-ok" id="formOk">
+        <div class="ico">✓</div>
+        <h4>Заявка принята</h4>
+        <p>Менеджер свяжется с вами в течение 15 минут.<br>Спасибо! Мы свяжемся с вами.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<a class="hdr-phone" id="headerPhone" href="tel:{{ contact.phone_primary_tel() }}" hx-swap-oob="true"><span>{{ contact.phone_primary }}</span>{% if contact.has_working_hours() %}<small>{{ contact.working_hours }}</small>{% endif %}</a>

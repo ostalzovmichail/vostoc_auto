@@ -1,0 +1,104 @@
+# .gitignore для всего проекта «Берег».
+#
+# Здесь собраны правила для корня рабочей области. Подпроекты (`bec/`,
+# `admin_app/`, `TG/`) дополнительно имеют собственные .gitignore — они
+# продолжают действовать, а этот файл страхует корень и общие артефакты.
+
+# ── Секреты и локальные окружения ──────────────────────────────────────────
+# Токены (админ-API, Telegram-бота) и настройки окружения в репозиторий не
+# попадают. Шаблоны без секретов (`.env.example`) остаются в git.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ── ОС и файловые менеджеры ────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Редакторы и IDE ────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+.history/
+.vscode/*
+!.vscode/extensions.json
+
+# ── Rust (bec/, TG/) ───────────────────────────────────────────────────────
+# `target/` — артефакты сборки; `Cargo.lock` для приложений коммитим.
+target/
+**/target/
+*.rs.bk
+*.pdb
+
+# ── Базы данных ────────────────────────────────────────────────────────────
+# Локальные базы создаются миграциями при старте и не версионируются.
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ── Логи ───────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Flutter / Dart (admin_app/) ────────────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+**/doc/api/
+
+# Символы и карты обфускации релизных сборок.
+app.*.symbols
+app.*.map.json
+
+# ── Android ────────────────────────────────────────────────────────────────
+# Ключи подписи — секрет, в репозиторий не попадают.
+**/android/key.properties
+*.jks
+*.keystore
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/.gradle/
+
+# ── iOS / macOS ────────────────────────────────────────────────────────────
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/macos/Pods/
+**/macos/Flutter/ephemeral/
+**/*.xcuserstate
+**/xcuserdata/
+
+# ── Linux / Windows (Flutter desktop) ──────────────────────────────────────
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# ── Telegram-бот (TG/) ─────────────────────────────────────────────────────
+# Сохранённые сообщения и фото бота — локальные данные, не часть кода.
+TG/data/
+
+# ── Временные и служебные файлы ────────────────────────────────────────────
+*.tmp
+*.bak
+migrate_working_dir/
+.widget_preview/

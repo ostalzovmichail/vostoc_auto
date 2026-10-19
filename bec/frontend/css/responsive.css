@@ -1,0 +1,31 @@
+/* =====================================================================
+   Адаптив и режим «меньше движения».
+   Подключается последним, чтобы переопределять правила секций.
+   ===================================================================== */
+
+@media(max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .proc-grid,.cnt-grid{grid-template-columns:1fr;gap:40px}
+  .proc-left{position:static}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  nav{display:none}
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .specs{grid-template-columns:repeat(2,1fr)}
+  .sec{padding:64px 0}
+  .hdr-phone{display:none}
+  .catalog-tools{flex-direction:column}
+  .c-sort{width:100%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+  .lm span{transform:none}
+  .stamp span{opacity:.95}
+  .tick-track{transform:none}
+}

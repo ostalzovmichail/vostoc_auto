@@ -1,0 +1,34 @@
+/* =====================================================================
+   Контакты: телефоны, реквизиты, мессенджеры, форма обратного звонка.
+   ===================================================================== */
+
+.contacts{background:var(--bg2);border-top:1px solid var(--line)}
+.cnt-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:56px}
+.cnt-phone{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(24px,3vw,36px);margin:8px 0 4px;transition:color .25s}
+.cnt-phone:hover{color:var(--acc)}
+.cnt-phone-sm{font-size:clamp(18px,2vw,24px)}
+.cnt-sub{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:30px}
+.cnt-sub-mt{margin-top:14px;margin-bottom:0}
+.cnt-rows{display:flex;flex-direction:column;border-top:1px solid var(--line2)}
+.cnt-row{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid var(--line2);align-items:flex-start}
+.cnt-row .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);min-width:110px;padding-top:3px}
+.cnt-row .v{font-size:15px}
+.cnt-row .v small{display:block;color:var(--mut);font-size:12.5px}
+.link-underline{border-bottom:1px solid var(--line2);transition:color .25s,border-color .25s}
+.link-underline:hover{color:var(--acc);border-color:var(--acc)}
+.messengers{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+.m-chip{font-family:var(--mono);font-size:12px;letter-spacing:.08em;border:1px solid var(--line2);background:var(--card);padding:11px 18px;border-radius:3px;transition:all .25s;display:inline-flex;gap:8px;align-items:center}
+.m-chip:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-2px)}
+
+.cnt-form{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:32px;position:relative;box-shadow:var(--shadow)}
+.cnt-form h3{font-family:var(--disp);font-weight:600;font-size:17px;text-transform:uppercase;margin-bottom:6px}
+.cnt-form>p{color:var(--mut);font-size:13.5px;margin-bottom:24px}
+.fld{margin-bottom:16px}
+.fld label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:7px}
+.fld input,.fld textarea{width:100%;background:#FBFAF6;border:1px solid var(--line2);border-radius:3px;color:var(--txt);font-family:var(--body);font-size:15px;padding:13px 14px;transition:border-color .25s, box-shadow .25s;outline:none;resize:vertical}
+.fld input:focus,.fld textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(238,90,30,.12)}
+.btn-block{width:100%;justify-content:center}
+.form-ok{display:none;text-align:center;padding:34px 10px}
+.form-ok .ico{width:56px;height:56px;border:2px solid var(--ok);border-radius:50%;display:grid;place-items:center;color:var(--ok);font-size:26px;margin:0 auto 16px}
+.form-ok h4{font-family:var(--disp);font-size:16px;text-transform:uppercase;margin-bottom:8px}
+.form-ok p{color:var(--mut);font-size:13.5px}

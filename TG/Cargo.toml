@@ -1,0 +1,20 @@
+[package]
+name = "tg_archiver_bot"
+version = "0.1.0"
+edition = "2021"
+description = "Телеграм-бот: сохраняет тексты сообщений и фотографии на диск"
+
+[dependencies]
+# Фреймворк бота. default-features отключён, чтобы не тянуть native-tls (openssl):
+# teloxide-core/default — это ровно native-tls, поэтому берём чистый rustls.
+# ctrlc_handler — корректное завершение по Ctrl+C.
+teloxide = { version = "0.17", default-features = false, features = ["rustls", "ctrlc_handler"] }
+# Инъекция зависимостей: через неё в обработчик передаётся Storage.
+dptree = "0.5"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs"] }
+# Чтение токена и настроек из файла .env.
+dotenvy = "0.15"
+anyhow = "1"
+chrono = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

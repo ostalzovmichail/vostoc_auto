@@ -1,0 +1,16 @@
+/* =====================================================================
+   Блок «как мы работаем»: описание слева, шаги справа.
+   ===================================================================== */
+
+.proc-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:start}
+.proc-left{position:sticky;top:110px}
+.proc-left p{color:var(--mut);font-size:15px;margin:18px 0 26px;max-width:400px}
+.proc-note{border:1px solid var(--line);border-left:3px solid var(--acc);padding:16px 18px;font-size:13.5px;color:var(--mut);border-radius:3px;background:var(--card);box-shadow:0 2px 10px rgba(31,26,17,.05)}
+.proc-note b{color:var(--txt)}
+.steps{display:flex;flex-direction:column;gap:16px}
+.step{display:flex;gap:22px;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:24px 26px;transition:border-color .3s,transform .3s,box-shadow .3s;box-shadow:0 2px 10px rgba(31,26,17,.04)}
+.step:hover{border-color:var(--acc);transform:translateX(6px);box-shadow:0 8px 24px rgba(31,26,17,.08)}
+.step-n{font-family:var(--disp);font-weight:800;font-size:30px;color:transparent;-webkit-text-stroke:1.5px var(--acc);flex-shrink:0;line-height:1.1}
+.step h3{font-family:var(--disp);font-weight:600;font-size:15px;text-transform:uppercase;margin-bottom:8px;letter-spacing:.03em}
+.step p{color:var(--mut);font-size:13.5px;line-height:1.65}
+.step .tag-m{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);border:1px solid rgba(238,90,30,.4);background:rgba(238,90,30,.06);padding:4px 9px;border-radius:2px}

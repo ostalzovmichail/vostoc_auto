@@ -1,0 +1,5 @@
+<div class="stat rv"><b class="cnt" data-to="{{ total }}">0</b><span>авто в базе сейчас</span></div>
+<div class="stat rv d1"><b class="cnt" data-to="{{ sold }}">0</b><span>продано клиентам</span></div>
+{% if sold > 0 %}
+<div class="stat rv d2"><b><span class="cnt" data-to="{{ avg_days }}">0</span></b><span>дней — средний срок сделки</span></div>
+{% endif %}
