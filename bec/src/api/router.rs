@@ -459,8 +459,9 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let json = json_body(response).await;
         let cars = json.as_array().expect("ожидался массив автомобилей");
-        // В реальных данных два активных объявления: Honda XR-V и Audi A3.
-        assert_eq!(cars.len(), 2);
+        // В реальных данных шесть активных объявлений (Honda, Audi,
+        // Toyota, Haval, Volkswagen, Chevrolet).
+        assert_eq!(cars.len(), 6);
         assert!(cars.iter().all(|car| car["status"] != "sold"));
     }
 
@@ -480,8 +481,8 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let json = json_body(response).await;
         let cars = json.as_array().unwrap();
-        // Оба реальных авто сейчас в наличии.
-        assert_eq!(cars.len(), 2);
+        // Все реальные авто сейчас в наличии.
+        assert_eq!(cars.len(), 6);
         assert!(cars.iter().all(|car| car["status"] == "stock"));
     }
 
@@ -516,8 +517,9 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::OK);
         let json = json_body(response).await;
-        // Самая свежая запись — реальное объявление Audi A3 (лот 0249).
-        assert_eq!(json["lot_number"], "0249");
+        // Самая свежая запись — реальное объявление Chevrolet Monza (лот 0253),
+        // заведённое последней миграцией.
+        assert_eq!(json["lot_number"], "0253");
         // Обложка — относительный путь, который раздаёт сам бэкенд.
         let cover = json["image_url"]
             .as_str()
@@ -526,8 +528,8 @@ mod tests {
             cover.starts_with("/images/"),
             "неожиданная обложка: {cover}"
         );
-        // Галерея реального авто: 9 фотографий.
-        assert_eq!(json["images"].as_array().map(Vec::len), Some(9));
+        // Галерея реального авто: 10 фотографий.
+        assert_eq!(json["images"].as_array().map(Vec::len), Some(10));
     }
 
     #[tokio::test]
@@ -598,8 +600,8 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::OK);
         let json = json_body(response).await;
-        assert_eq!(json["total"], 2);
-        assert_eq!(json["in_stock"], 2);
+        assert_eq!(json["total"], 6);
+        assert_eq!(json["in_stock"], 6);
         assert_eq!(json["in_transit"], 0);
         assert_eq!(json["on_order"], 0);
         assert_eq!(json["sold"], 0);
@@ -639,8 +641,8 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::OK);
         let html = text_body(response).await;
-        assert!(html.contains("Audi A3"), "нет названия авто");
-        assert!(html.contains("audi-a3-1.jpg"), "нет фото обложки");
+        assert!(html.contains("Chevrolet Monza"), "нет названия авто");
+        assert!(html.contains("chevrolet-monza-1.jpg"), "нет фото обложки");
         assert!(html.contains("hero-thumb"), "нет миниатюр галереи");
     }
 
@@ -660,8 +662,8 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::OK);
         let html = text_body(response).await;
-        // Оба реальных авто в наличии.
-        assert_eq!(html.matches("class=\"cc rv\"").count(), 2);
+        // Все шесть реальных авто в наличии.
+        assert_eq!(html.matches("class=\"cc rv\"").count(), 6);
         // Счётчики фильтров уезжают отдельными элементами (вне области подстановки).
         assert!(html.contains("id=\"countAll\""));
         assert!(html.contains("hx-swap-oob"));
@@ -720,7 +722,7 @@ mod tests {
             .unwrap();
         assert_eq!(stats.status(), StatusCode::OK);
         let html = text_body(stats).await;
-        assert!(html.contains("data-to=\"2\""), "нет общего числа авто");
+        assert!(html.contains("data-to=\"6\""), "нет общего числа авто");
         assert!(html.contains("data-to=\"0\""), "нет числа проданных");
         // Средний срок сделки без продаж не показываем — это была бы выдумка.
         assert!(!html.contains("средний срок сделки"));
@@ -893,7 +895,7 @@ mod tests {
         assert_eq!(created.status(), StatusCode::CREATED);
         let created = json_body(created).await;
         let id = created["id"].as_i64().expect("id должен быть числом");
-        assert_eq!(created["lot_number"], "0250", "следующий свободный лот");
+        assert_eq!(created["lot_number"], "0254", "следующий свободный лот");
         assert_eq!(created["status"], "stock");
 
         // Новое авто видно в админ-списке.
