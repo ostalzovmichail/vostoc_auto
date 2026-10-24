@@ -26,6 +26,13 @@ pub struct HeroTemplate {
 pub struct CatalogTemplate {
     pub cars: Vec<Car>,
     pub stats: Stats,
+}
+
+/// Детальная информация об автомобиле (модальное окно).
+#[derive(Template)]
+#[template(path = "partials/car_detail.html")]
+pub struct CarDetailTemplate {
+    pub car: Car,
     pub phone_tel: String,
 }
 

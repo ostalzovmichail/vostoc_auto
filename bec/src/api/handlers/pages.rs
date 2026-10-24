@@ -6,7 +6,7 @@
 
 use crate::api::handlers::cars::FILTER_STATUSES;
 use crate::api::templates::{
-    CatalogTemplate, ContactsTemplate, HeroTemplate, SoldTemplate, StatsTemplate,
+    CarDetailTemplate, CatalogTemplate, ContactsTemplate, HeroTemplate, SoldTemplate, StatsTemplate,
 };
 use crate::api::AppState;
 use crate::core::models::{now_vlat_display, CarFilter, Stats};
@@ -68,17 +68,67 @@ async fn phone_tel(state: &AppState) -> String {
         .unwrap_or_default()
 }
 
-/// GET /partials/hero — главный акцент с последним авто.
-pub async fn hero_partial(State(state): State<AppState>) -> Response {
-    let car = match state.db.latest_car().await {
-        Ok(Some(car)) => car,
-        Ok(None) => return error_fragment(StatusCode::NOT_FOUND, "В базе пока нет автомобилей"),
-        Err(error) => {
-            tracing::error!(error = %error, "Не удалось получить последнее авто для главной");
-            return error_fragment(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Сервис временно недоступен",
-            );
+/// Сколько последних добавленных авто участвует в случайном показе на главной.
+const HERO_POOL: i64 = 10;
+
+/// Параметры фрагмента главного акцента.
+#[derive(Debug, Deserialize)]
+pub struct HeroQuery {
+    /// `1` — выбрать случайное авто из последних [`HERO_POOL`].
+    /// Без параметра отдаётся строго последнее добавленное авто.
+    pub random: Option<u8>,
+}
+
+/// Псевдослучайный индекс в диапазоне `0..len`.
+///
+/// Отдельная зависимость ради выбора одного из десяти не нужна: время
+/// в наносекундах перемешивается и даёт достаточно разнообразия для ротации.
+fn random_index(len: usize) -> usize {
+    debug_assert!(len > 0);
+    let seed = chrono::Utc::now().timestamp_nanos_opt().unwrap_or_default() as u64;
+    // Перемешивание xorshift, чтобы младшие биты времени не давали перекос.
+    let mut x = seed ^ (seed >> 33);
+    x = x.wrapping_mul(0xff51afd7ed558ccd);
+    x ^= x >> 33;
+    (x as usize) % len
+}
+
+/// GET /partials/hero — главный акцент с авто.
+///
+/// `?random=1` — случайное авто из последних [`HERO_POOL`] добавленных
+/// (используется для ротации на главной). Без параметра — последнее.
+pub async fn hero_partial(
+    State(state): State<AppState>,
+    Query(query): Query<HeroQuery>,
+) -> Response {
+    let car = if query.random.unwrap_or(0) != 0 {
+        match state.db.latest_cars(HERO_POOL).await {
+            Ok(mut cars) if !cars.is_empty() => {
+                let index = random_index(cars.len());
+                cars.swap_remove(index)
+            }
+            Ok(_) => return error_fragment(StatusCode::NOT_FOUND, "В базе пока нет автомобилей"),
+            Err(error) => {
+                tracing::error!(error = %error, "Не удалось получить последние авто для главной");
+                return error_fragment(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Сервис временно недоступен",
+                );
+            }
+        }
+    } else {
+        match state.db.latest_car().await {
+            Ok(Some(car)) => car,
+            Ok(None) => {
+                return error_fragment(StatusCode::NOT_FOUND, "В базе пока нет автомобилей")
+            }
+            Err(error) => {
+                tracing::error!(error = %error, "Не удалось получить последнее авто для главной");
+                return error_fragment(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Сервис временно недоступен",
+                );
+            }
         }
     };
 
@@ -150,11 +200,7 @@ pub async fn catalog_partial(
         }
     };
 
-    render(&CatalogTemplate {
-        cars,
-        stats,
-        phone_tel: phone_tel(&state).await,
-    })
+    render(&CatalogTemplate { cars, stats })
 }
 
 /// GET /partials/sold — архив недавно проданных.
@@ -216,4 +262,27 @@ pub async fn contacts_partial(State(state): State<AppState>) -> Response {
     };
 
     render(&ContactsTemplate { contact })
+}
+
+/// GET /partials/car/:id — детальная информация об автомобиле (модалка).
+pub async fn car_detail_partial(
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> Response {
+    let car = match state.db.car_by_id(id).await {
+        Ok(Some(car)) => car,
+        Ok(None) => return error_fragment(StatusCode::NOT_FOUND, "Автомобиль не найден"),
+        Err(error) => {
+            tracing::error!(error = %error, "Не удалось получить авто для деталей");
+            return error_fragment(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Сервис временно недоступен",
+            );
+        }
+    };
+
+    render(&CarDetailTemplate {
+        car,
+        phone_tel: phone_tel(&state).await,
+    })
 }

@@ -86,6 +86,7 @@ fn api_routes() -> Router<AppState> {
         // и `/api/cars/latest` не перехватывается маршрутом `/api/cars`.
         .route("/api/cars", get(cars::cars_handler))
         .route("/api/cars/latest", get(cars::latest_car_handler))
+        .route("/api/cars/latest-list", get(cars::latest_cars_handler))
         .route("/api/cars/sold", get(cars::sold_cars_handler))
         .route("/api/stats", get(cars::stats_handler))
         .route("/api/contacts", get(cars::contacts_handler))
@@ -198,6 +199,7 @@ fn partials_routes() -> Router<AppState> {
     Router::new()
         .route("/partials/hero", get(pages::hero_partial))
         .route("/partials/catalog", get(pages::catalog_partial))
+        .route("/partials/car/:id", get(pages::car_detail_partial))
         .route("/partials/sold", get(pages::sold_partial))
         .route("/partials/stats", get(pages::stats_partial))
         .route("/partials/contacts", get(pages::contacts_partial))
@@ -330,6 +332,10 @@ mod tests {
         }
 
         async fn latest_car(&self) -> Result<Option<Car>, sqlx::Error> {
+            Err(sqlx::Error::PoolTimedOut)
+        }
+
+        async fn latest_cars(&self, _limit: i64) -> Result<Vec<Car>, sqlx::Error> {
             Err(sqlx::Error::PoolTimedOut)
         }
 
@@ -646,6 +652,39 @@ mod tests {
         assert!(html.contains("hero-thumb"), "нет миниатюр галереи");
     }
 
+    /// `?random=1` отдаёт случайное авто из последних 10, а не всегда последнее.
+    #[tokio::test]
+    async fn test_partial_hero_random_returns_pool_car() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .uri("/partials/hero?random=1")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let html = text_body(response).await;
+        assert!(html.contains("hero-frame"), "нет главного акцента");
+        assert!(html.contains("hero-thumb"), "нет миниатюр галереи");
+        assert!(
+            [
+                "Honda",
+                "Audi",
+                "Toyota",
+                "Haval",
+                "Volkswagen",
+                "Chevrolet"
+            ]
+            .iter()
+            .any(|brand| html.contains(brand)),
+            "случайное авто должно быть из сида"
+        );
+    }
+
     /// GET /partials/catalog — карточки по фильтру + счётчики через hx-swap-oob.
     #[tokio::test]
     async fn test_partial_catalog_filters_and_counts() {
@@ -749,6 +788,62 @@ mod tests {
         assert!(html.contains("hx-swap-oob"));
     }
 
+    /// Клик по карточке каталога открывает модалку: фрагмент деталей
+    /// подставляется в `#carModalContainer` обычным swap (без hx-swap-oob).
+    #[tokio::test]
+    async fn test_partial_car_detail_renders_modal() {
+        let app = test_app().await;
+
+        let latest = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/cars/latest")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let car = json_body(latest).await;
+        let id = car["id"].as_i64().expect("id должен быть числом");
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri(format!("/partials/car/{id}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let html = text_body(response).await;
+        assert!(html.contains("modal-overlay"), "нет корня модалки");
+        assert!(html.contains("carModalTitle"), "нет заголовка модалки");
+        assert!(html.contains("modal-thumb"), "нет галереи фото");
+        // Модалка должна вставиться в контейнер, а не искаться как OOB-цель.
+        assert!(!html.contains("hx-swap-oob"), "модалка не должна быть OOB");
+    }
+
+    /// Неизвестный id возвращает 404-фрагмент, а не пустую модалку.
+    #[tokio::test]
+    async fn test_partial_car_detail_returns_404_for_unknown_id() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .uri("/partials/car/999999")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert!(text_body(response).await.contains("не найден"));
+    }
+
     /// Страница нового фронтенда раздаётся сервером на /ui/.
     #[tokio::test]
     async fn test_frontend_page_and_assets_are_served() {
@@ -761,7 +856,7 @@ mod tests {
             .unwrap();
         assert_eq!(page.status(), StatusCode::OK);
         let html = text_body(page).await;
-        assert!(html.contains("ВОСТОК АВТО"));
+        assert!(html.contains("БЕРЕГ"));
         assert!(html.contains("vendor/htmx.min.js"));
 
         let css = app

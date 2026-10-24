@@ -52,6 +52,34 @@ pub async fn latest_car_handler(State(state): State<AppState>) -> Result<Json<Ca
     }
 }
 
+/// GET /api/cars/latest-list — последние N добавленных авто (для ротации на главной).
+#[utoipa::path(
+    get,
+    path = "/api/cars/latest-list",
+    params(
+        ("limit" = Option<i64>, Query, description = "Количество авто, 1..=20 (по умолчанию 10)")
+    ),
+    responses(
+        (status = 200, description = "Список последних автомобилей", body = [Car]),
+        (status = 500, description = "Ошибка БД", body = ApiResponse)
+    ),
+    tag = "Cars"
+)]
+pub async fn latest_cars_handler(
+    State(state): State<AppState>,
+    Query(query): Query<CarsQuery>,
+) -> Result<Json<Vec<Car>>, ApiResult> {
+    let limit = query.limit.unwrap_or(10).clamp(1, 20);
+
+    match state.db.latest_cars(limit).await {
+        Ok(cars) => Ok(Json(cars)),
+        Err(error) => {
+            tracing::error!(error = %error, "Не удалось получить последние авто");
+            Err(internal_error())
+        }
+    }
+}
+
 /// GET /api/cars — автомобили в продаже (без проданных).
 ///
 /// Фильтр `status` принимает только `stock`, `transit` или `order`.

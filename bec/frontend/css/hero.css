@@ -6,11 +6,14 @@
   background:
     radial-gradient(700px 420px at 85% 0%, rgba(238,90,30,.09), transparent 65%),
     linear-gradient(var(--bg) 0%, var(--bg2) 100%);}
-.hero-grid{display:grid;grid-template-columns:1.15fr .95fr;gap:48px;align-items:center}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.95fr);gap:48px;align-items:center}
+/* Сетка не должна раздуваться от миниатюр галереи: 10 фото по 66px
+   шире мобильного экрана. Прокрутка остаётся внутри .hero-thumbs. */
+.hero-grid>div{min-width:0}
 .rec-label{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:18px}
 .rec-label .dot{width:8px;height:8px;background:var(--ok);border-radius:50%;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,158,98,.45)}50%{box-shadow:0 0 0 7px rgba(30,158,98,0)}}
-.hero-frame{position:relative;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.hero-frame{position:relative;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--card);box-shadow:var(--shadow);min-width:0}
 .hero-frame::before,.hero-frame::after{content:"";position:absolute;width:26px;height:26px;border:2px solid var(--acc);z-index:3}
 .hero-frame::before{top:10px;left:10px;border-right:none;border-bottom:none}
 .hero-frame::after{bottom:10px;right:10px;border-left:none;border-top:none}
@@ -45,7 +48,7 @@ h1{font-family:var(--disp);font-weight:800;font-size:clamp(26px,4vw,48px);line-h
 .db-line b{color:var(--txt);font-weight:500}
 
 /* ---------- галерея в hero ---------- */
-.hero-thumbs{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line2);overflow-x:auto}
+.hero-thumbs{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line2);overflow-x:auto;min-width:0;max-width:100%}
 .hero-thumb{flex:0 0 auto;width:66px;height:48px;border:1px solid var(--line2);border-radius:4px;background-size:cover;background-position:center;cursor:pointer;padding:0;opacity:.55;transition:opacity .2s ease,border-color .2s ease}
 .hero-thumb:hover{opacity:1}
 .hero-thumb.on{opacity:1;border-color:var(--acc)}

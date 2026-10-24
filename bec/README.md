@@ -58,10 +58,11 @@ frontend/
 
 | Блок | Запрос | Приём |
 |---|---|---|
-| Главный акцент | `GET /partials/hero` | `#heroBody` |
+| Главный акцент | `GET /partials/hero?random=1` | `#heroBody` (ротация раз в 12 секунд) |
 | Каталог | `GET /partials/catalog?status=&q=&sort=` | `#carGrid` (+ счётчики фильтров через `hx-swap-oob`) |
 | Проданные | `GET /partials/sold` | `#soldRow` |
 | Статистика | `GET /partials/stats` | `#statsGrid` |
+| Детали авто | `GET /partials/car/:id` | `#carModalContainer` (модалка по клику на карточку) |
 | Контакты | `GET /partials/contacts` | `#contactsBody` (+ телефон в шапке через `hx-swap-oob`) |
 
 Фильтры каталога (статус, поиск, сортировка) живут вне области подстановки, поэтому не сбрасываются при обновлении списка.
@@ -135,8 +136,9 @@ APP_ENV=prod cargo run
 | `GET /api/admin/stats/visits` | **Админ-API.** Счётчик посещений сайта: всего / сегодня / за 7 дней. На публичной странице не показывается |
 | `GET /images/<путь>` | Статические файлы из `static/images/` — фотографии авто. Пример: `/images/honda-xr-v-2023/honda-xr-v-2023-1.jpeg` |
 | `GET /ui/` | Страница фронтенда (HTML + CSS + htmx) из `frontend/` |
-| `GET /partials/hero` | HTML-фрагмент: главный акцент с последним авто |
+| `GET /partials/hero` | HTML-фрагмент: главный акцент. `?random=1` — случайное авто из последних 10 (ротация на главной) |
 | `GET /partials/catalog?status=&q=&sort=` | HTML-фрагмент: карточки каталога. `status`: `stock`,`transit`,`order`; `q` — поиск; `sort`: `new`,`price-asc`,`price-desc`,`mileage` |
+| `GET /partials/car/:id` | HTML-фрагмент: подробное описание авто для модалки каталога |
 | `GET /partials/sold` | HTML-фрагмент: архив проданных |
 | `GET /partials/stats` | HTML-фрагмент: счётчики статистики |
 | `GET /partials/contacts` | HTML-фрагмент: контакты и форма звонка |

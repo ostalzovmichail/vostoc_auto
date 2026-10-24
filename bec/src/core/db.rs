@@ -20,6 +20,9 @@ pub trait Database: Send + Sync {
     /// Последнее добавленное авто — акцент на главной странице.
     async fn latest_car(&self) -> Result<Option<Car>, sqlx::Error>;
 
+    /// Последние N добавленных авто — для ротации на главной странице.
+    async fn latest_cars(&self, limit: i64) -> Result<Vec<Car>, sqlx::Error>;
+
     /// Список автомобилей. `status = None` — все, кроме проданных;
     /// иначе только записи с указанным статусом (`stock` | `transit` | `order`).
     async fn list_cars(
@@ -154,6 +157,20 @@ impl Database for SqliteDb {
         }
 
         Ok(car)
+    }
+
+    async fn latest_cars(&self, limit: i64) -> Result<Vec<Car>, sqlx::Error> {
+        let limit = limit.clamp(1, 20); // разумный максимум для ротации
+        let mut cars = sqlx::query_as::<_, Car>(
+            "SELECT * FROM cars WHERE status != 'sold' \
+             ORDER BY created_at DESC, id DESC LIMIT ?",
+        )
+        .bind(limit)
+        .fetch_all(&self.pool)
+        .await?;
+
+        self.attach_images(&mut cars).await?;
+        Ok(cars)
     }
 
     async fn list_cars(

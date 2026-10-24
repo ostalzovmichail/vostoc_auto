@@ -1,0 +1,283 @@
+/* === Модалка деталей авто === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(23, 26, 31, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--mut);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover {
+  border-color: var(--acc);
+  color: var(--acc);
+  background: var(--bg2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.modal-title {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: clamp(20px, 3vw, 28px);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.modal-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.modal-badge.status-stock { background: rgba(30, 158, 98, 0.12); color: var(--ok); border: 1px solid rgba(30, 158, 98, 0.3); }
+.modal-badge.status-transit { background: rgba(166, 106, 0, 0.12); color: var(--warn); border: 1px solid rgba(166, 106, 0, 0.3); }
+.modal-badge.status-order { background: rgba(46, 123, 196, 0.12); color: var(--info); border: 1px solid rgba(46, 123, 196, 0.3); }
+
+.modal-body {
+  /* Одна колонка: фото сверху, текстовые блоки — ниже.
+     minmax(0, 1fr) не даёт строке миниатюр растянуть колонку
+     и сломать сетку на узких экранах. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.modal-gallery {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.modal-main-img {
+  aspect-ratio: 16/9;
+  max-height: 440px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--card);
+}
+.modal-main-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.modal-main-img:hover img {
+  transform: scale(1.02);
+}
+
+.modal-thumbs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  min-width: 0;
+  max-width: 100%;
+  padding-bottom: 4px;
+}
+.modal-thumb {
+  flex: 0 0 72px;
+  height: 54px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+.modal-thumb:hover { opacity: 1; }
+.modal-thumb.active {
+  border-color: var(--acc);
+  opacity: 1;
+}
+
+.modal-info {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+}
+
+.modal-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+.meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.meta-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.meta-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--txt);
+}
+
+.modal-divider {
+  border-top: 1px dashed var(--line2);
+  margin: 4px 0;
+}
+
+.modal-section-title {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--txt);
+  margin: 8px 0 12px;
+}
+
+.modal-specs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
+}
+.spec-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.spec-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.spec-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--txt);
+}
+
+.modal-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal-price {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: clamp(24px, 3vw, 32px);
+  color: var(--acc);
+}
+.modal-price-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mut);
+  letter-spacing: 0.06em;
+}
+.modal-auction-price {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--mut);
+}
+.modal-auction-price b { color: var(--txt); }
+
+.modal-description {
+  color: var(--mut);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.modal-actions .btn {
+  flex: 1;
+  min-width: 160px;
+  justify-content: center;
+}
+
+/* Адаптив для модалки */
+@media (max-width: 768px) {
+  .modal {
+    max-height: 95vh;
+  }
+  .modal-main-img {
+    aspect-ratio: 4/3;
+    max-height: none;
+  }
+  .modal-specs {
+    grid-template-columns: 1fr;
+  }
+}

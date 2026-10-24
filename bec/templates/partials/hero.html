@@ -1,7 +1,7 @@
 <div class="hero-grid">
   <div class="rv">
     <div class="hero-frame">
-      <div class="badge-new"><span class="badge-dot"></span> ТОЛЬКО ЧТО В БАЗЕ</div>
+      <div class="badge-new"><span class="badge-dot"></span> СЛУЧАЙНОЕ ИЗ ПОСЛЕДНИХ 10</div>
       <div class="hero-img">
         <img id="heroImg" src="{{ car.cover() }}" alt="{{ car.title() }}">
       </div>
@@ -21,8 +21,8 @@
     </div>
   </div>
   <div>
-    <div class="rec-label"><span class="dot"></span> <span>Запись №{{ car.lot_number }} · добавлена {{ car.created_display() }}</span></div>
-    <span class="h-eyebrow">// Новинка недели</span>
+    <div class="rec-label"><span class="dot"></span> <span>Случайный подбор из последних 10 авто</span></div>
+    <span class="h-eyebrow">// Случайный подбор</span>
     <h1 id="scrambleTitle" data-text="{{ car.title() }}">{{ car.title() }}</h1>
     <p class="h-sub">{{ car.hero_sub() }}</p>
     <div class="specs rv d1">

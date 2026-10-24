@@ -4,7 +4,7 @@
    ===================================================================== */
 
 @media(max-width:1024px){
-  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .hero-grid{grid-template-columns:minmax(0,1fr);gap:36px}
   .grid{grid-template-columns:repeat(2,1fr)}
   .proc-grid,.cnt-grid{grid-template-columns:1fr;gap:40px}
   .proc-left{position:static}

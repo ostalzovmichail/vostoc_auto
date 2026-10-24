@@ -1,19 +1,45 @@
 /* =====================================================================
-   ВОСТОК АВТО — прогрессивные улучшения поверх htmx.
+   БЕРЕГ — прогрессивные улучшения поверх htmx.
 
    Данные и разметку приносит htmx: он запрашивает HTML-фрагменты
    (/partials/hero, /partials/catalog, ...) и вставляет их в страницу.
    Этот файл отвечает только за то, что разметкой не выразить:
-   появление блоков при скролле, счётчики, «шифр» заголовка и галерею.
-
-   Всё навешивается делегированием и заново применяется после каждой
-   подстановки htmx (событие htmx:afterSwap).
+   появление блоков при скролле, счётчики, «шифр» заголовка, галерею
+   и ротацию главного акцента (10 последних авто).
    ===================================================================== */
 (function () {
   'use strict';
 
   const $ = (id) => document.getElementById(id);
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- ротация главного акцента (10 последних авто) ---------- */
+  // Данные приносит сервер: `/partials/hero?random=1` отдаёт случайное авто
+  // из последних 10 добавленных. JS лишь перезапрашивает фрагмент по таймеру,
+  // поэтому фото, характеристики и цена всегда из одной машины.
+  let heroRotationPaused = false;
+
+  function startHeroRotation() {
+    const heroSection = document.getElementById('new');
+    if (!heroSection) return;
+
+    const rotateHero = () => {
+      if (heroRotationPaused || typeof htmx === 'undefined') return;
+      htmx.ajax('GET', '/partials/hero?random=1', {
+        target: '#heroBody',
+        swap: 'innerHTML',
+      });
+    };
+
+    // Ротация каждые 12 секунд; наведение курсора ставит показ на паузу.
+    setInterval(rotateHero, 12000);
+    heroSection.addEventListener('mouseenter', () => {
+      heroRotationPaused = true;
+    });
+    heroSection.addEventListener('mouseleave', () => {
+      heroRotationPaused = false;
+    });
+  }
 
   /* ---------- появление блоков при скролле ---------- */
   const REVEAL_SELECTOR = '.rv, .sec-h, .sold-card';
@@ -136,20 +162,78 @@
     if (ok) ok.style.display = 'block';
   });
 
+  /* ---------- модалка деталей авто ---------- */
+  function closeCarModal() {
+    const container = $('carModalContainer');
+    if (container) container.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  // Модалка подставляется htmx: блокируем прокрутку страницы, пока она открыта,
+  // и переводим фокус на кнопку закрытия.
+  function syncModalState() {
+    const overlay = document.querySelector('#carModalContainer .modal-overlay');
+    document.body.style.overflow = overlay ? 'hidden' : '';
+    if (overlay) {
+      const close = overlay.querySelector('[data-close-modal]');
+      if (close) close.focus({ preventScroll: true });
+    }
+  }
+
+  // Закрытие: крестик, кнопка «Хочу похожее», клик по фону и Escape.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close-modal]')) {
+      closeCarModal();
+      return;
+    }
+    const overlay = e.target.closest('.modal-overlay');
+    if (overlay && e.target === overlay) closeCarModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeCarModal();
+  });
+
+  // Галерея в модалке: клик по миниатюре меняет главное фото.
+  document.addEventListener('click', (e) => {
+    const thumb = e.target.closest('.modal-thumb');
+    if (!thumb) return;
+    const mainImg = $('modalMainImg');
+    if (mainImg && thumb.dataset.src) mainImg.src = thumb.dataset.src;
+    document.querySelectorAll('.modal-thumb')
+      .forEach((btn) => btn.classList.toggle('active', btn === thumb));
+  });
+
   /* ---------- перезапуск после подстановок htmx ---------- */
   function refresh() {
     initReveal();
     runCounters();
     scramble();
+    syncModalState();
   }
+
+  // Перезапуск scramble после ротации героя
+  document.addEventListener('hero:rotated', () => {
+    const el = $('scrambleTitle');
+    if (el) {
+      el.dataset.done = '0';
+      scramble();
+    }
+  });
 
   document.addEventListener('htmx:afterSwap', refresh);
   document.addEventListener('htmx:afterSettle', refresh);
 
   initHeader();
+
+  // Загружаем список авто для ротации и инициализируем
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', refresh);
+    document.addEventListener('DOMContentLoaded', () => {
+      startHeroRotation();
+      refresh();
+    });
   } else {
+    startHeroRotation();
     refresh();
   }
 })();
