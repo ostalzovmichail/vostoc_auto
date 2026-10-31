@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="a-page-head">
+  <div>
+    <span class="sec-tag">01 / Каталог</span>
+    <h1 class="a-h1">Автомобили</h1>
+  </div>
+  <div class="a-page-actions">
+    <a class="a-btn a-btn-solid" href="/admin/cars/new">Добавить авто <span class="ar">→</span></a>
+  </div>
+</div>
+
+<form id="carsFilters" class="a-filters"
+      hx-get="/admin/partials/cars" hx-target="#carsTable" hx-swap="innerHTML"
+      hx-trigger="change, submit, keyup changed delay:300ms from:.a-search">
+  <label class="a-field a-field-inline">
+    <span class="a-label">Статус</span>
+    <select class="a-input a-select" name="status">
+      <option value="" {% if status.is_empty() %}selected{% endif %}>Все</option>
+      <option value="stock" {% if status == "stock" %}selected{% endif %}>В наличии ({{ stats.in_stock }})</option>
+      <option value="transit" {% if status == "transit" %}selected{% endif %}>В пути ({{ stats.in_transit }})</option>
+      <option value="order" {% if status == "order" %}selected{% endif %}>Под заказ ({{ stats.on_order }})</option>
+      <option value="sold" {% if status == "sold" %}selected{% endif %}>Проданные ({{ stats.sold }})</option>
+    </select>
+  </label>
+
+  <label class="a-field a-field-grow">
+    <span class="a-label">Поиск</span>
+    <input class="a-input a-search" type="search" name="q" value="{{ query }}"
+           placeholder="Марка, модель или номер лота…" autocomplete="off">
+  </label>
+
+  <label class="a-field a-field-inline">
+    <span class="a-label">Сортировка</span>
+    <select class="a-input a-select" name="sort">
+      <option value="new" {% if sort == "new" || sort.is_empty() %}selected{% endif %}>Сначала новые</option>
+      <option value="price-asc" {% if sort == "price-asc" %}selected{% endif %}>Цена ↑</option>
+      <option value="price-desc" {% if sort == "price-desc" %}selected{% endif %}>Цена ↓</option>
+      <option value="mileage" {% if sort == "mileage" %}selected{% endif %}>Пробег ↑</option>
+      <option value="sold" {% if sort == "sold" %}selected{% endif %}>Свежие продажи</option>
+    </select>
+  </label>
+</form>
+
+<div class="a-table-wrap">
+  <div id="carsTable">
+    {% include "admin/partials/cars_table.html" %}
+  </div>
+</div>
+{% endblock %}

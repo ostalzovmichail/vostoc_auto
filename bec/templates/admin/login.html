@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход · БЕРЕГ</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ui/css/base.css">
+<link rel="stylesheet" href="/admin/assets/css/admin.css">
+<link rel="stylesheet" href="/admin/assets/css/form.css">
+<link rel="stylesheet" href="/admin/assets/css/responsive.css">
+<script src="/ui/vendor/htmx.min.js" defer></script>
+<script src="/admin/assets/js/admin.js" defer></script>
+</head>
+<body class="admin-body login-body">
+<div class="noise" aria-hidden="true"></div>
+<main class="login-wrap">
+  <a class="logo login-logo" href="/ui/">
+    <div class="logo-mark">Б</div>
+    <div class="logo-txt"><b>БЕРЕГ</b><small>Авто из-за рубежа · Доставка по России</small></div>
+  </a>
+
+  <div class="login-card">
+    <span class="sec-tag">// Управление каталогом</span>
+    <h1 class="login-title">Вход в админку</h1>
+
+    {% if !admin_enabled %}
+    <div class="a-alert a-alert-error">
+      Админка отключена: на сервере не задан <code>ADMIN_TOKEN</code>.
+    </div>
+    {% else %}
+    <p class="login-sub">Введите токен администратора из файла <code>.env</code>. Он не хранится в браузере: сервер выдаёт защищённую cookie-сессию.</p>
+
+    {% if let Some(message) = error %}
+    <div class="a-alert a-alert-error">{{ message }}</div>
+    {% endif %}
+
+    <form method="post" action="/admin/login" class="a-form login-form" id="loginForm">
+      <label class="a-field">
+        <span class="a-label">Токен администратора</span>
+        <input class="a-input" type="password" name="token" value="{{ token_value }}"
+               autocomplete="current-password" required autofocus>
+      </label>
+      <button class="a-btn a-btn-solid a-btn-block" type="submit">Войти <span class="ar">→</span></button>
+    </form>
+    {% endif %}
+  </div>
+
+  <a class="login-back" href="/ui/">← Вернуться на сайт</a>
+</main>
+</body>
+</html>

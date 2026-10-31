@@ -1,0 +1,42 @@
+/* =====================================================================
+   Админка — формы, поля, ошибки, вход.
+   ===================================================================== */
+
+.a-filters{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:22px;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:16px 18px}
+.a-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.a-field-inline{flex:0 0 auto}
+.a-field-grow{flex:1 1 260px}
+.a-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut)}
+.a-label small{font-size:9.5px;color:var(--line2)}
+.a-input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:3px;padding:11px 13px;font-family:var(--body);font-size:14px;color:var(--txt);outline:none;transition:border-color .2s,box-shadow .2s}
+.a-input::placeholder{color:var(--mut);opacity:.7}
+.a-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(238,90,30,.12)}
+.a-select{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt)}
+.a-textarea{resize:vertical;min-height:150px;line-height:1.6}
+.a-file{padding:8px;font-family:var(--mono);font-size:11px;color:var(--mut);cursor:pointer}
+.a-file::file-selector-button{margin-right:10px;border:1px solid var(--line2);border-radius:3px;background:var(--bg2);padding:7px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt);cursor:pointer}
+.a-file::file-selector-button:hover{border-color:var(--acc);color:var(--acc)}
+
+.a-form{display:flex;flex-direction:column;gap:0}
+.a-form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.a-form-divider{border-top:1px dashed var(--line2);margin:16px 0 20px}
+.a-form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;align-items:center}
+.a-ai-block{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--line);border-radius:4px;padding:16px 18px}
+.a-ai-block .a-muted{margin-top:4px}
+.a-ai-result{display:flex;gap:10px;align-items:flex-end;margin-top:10px}
+.a-ai-result .a-field{flex:1}
+.a-ai-result .a-btn{flex:0 0 auto;margin-bottom:1px}
+
+/* ---------- вход ---------- */
+.login-body{display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.login-wrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:22px;margin:auto}
+.login-logo{justify-content:center}
+.login-card{width:100%;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:30px 28px;box-shadow:var(--shadow)}
+.login-title{font-family:var(--disp);font-weight:800;font-size:26px;text-transform:uppercase;line-height:1.1;margin:8px 0 12px}
+.login-sub{font-size:13px;color:var(--mut);line-height:1.6;margin-bottom:18px}
+.login-sub code{font-family:var(--mono);font-size:11px;background:var(--bg2);padding:1px 5px;border-radius:2px}
+.login-form{gap:16px}
+.login-back{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--line2);padding-bottom:3px}
+.login-back:hover{color:var(--acc);border-color:var(--acc)}
+
+.a-file-preview{width:100%}

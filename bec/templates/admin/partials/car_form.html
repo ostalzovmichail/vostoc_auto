@@ -1,0 +1,113 @@
+<form id="carForm" class="a-card a-form" method="post" action="{{ action }}"
+      hx-post="{{ action }}" hx-target="#carForm" hx-swap="outerHTML">
+  {% if !errors.is_empty() %}
+  <div class="a-alert a-alert-error" role="alert">
+    <b>Проверьте форму:</b>
+    <ul>{% for error in errors %}<li data-field="{{ error.field }}">{{ error.message }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <div class="a-form-grid">
+    <label class="a-field">
+      <span class="a-label">Марка *</span>
+      <input class="a-input" name="brand" value="{{ form.brand }}" required autocomplete="off">
+    </label>
+    <label class="a-field">
+      <span class="a-label">Модель *</span>
+      <input class="a-input" name="model" value="{{ form.model }}" required autocomplete="off">
+    </label>
+    <label class="a-field">
+      <span class="a-label">Год выпуска *</span>
+      <input class="a-input" name="year" value="{{ form.year }}" inputmode="numeric" required>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Пробег, км *</span>
+      <input class="a-input" name="mileage" value="{{ form.mileage }}" inputmode="numeric" required>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Двигатель *</span>
+      <input class="a-input" name="engine" value="{{ form.engine }}" placeholder="1.5 (120 л.с.)" required>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Коробка передач *</span>
+      <input class="a-input" name="transmission" value="{{ form.transmission }}" placeholder="AT / MT / CVT" required>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Привод *</span>
+      <input class="a-input" name="drive" value="{{ form.drive }}" placeholder="FWD / RWD / AWD" required>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Цена, ₽ *</span>
+      <input class="a-input" name="price_rub" value="{{ form.price_rub }}" inputmode="numeric" required>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Номер лота</span>
+      <input class="a-input" name="lot_number" value="{{ form.lot_number }}" placeholder="Свободный, если пусто">
+    </label>
+
+    {% if !is_edit %}
+    <label class="a-field">
+      <span class="a-label">Статус</span>
+      <select class="a-input a-select" name="status">
+        <option value="stock" {% if form.status == "stock" || form.status.is_empty() %}selected{% endif %}>В наличии</option>
+        <option value="transit" {% if form.status == "transit" %}selected{% endif %}>В пути</option>
+        <option value="order" {% if form.status == "order" %}selected{% endif %}>Под заказ</option>
+        <option value="sold" {% if form.status == "sold" %}selected{% endif %}>Продан</option>
+      </select>
+    </label>
+    <label class="a-field">
+      <span class="a-label">Срок доставки, дней</span>
+      <input class="a-input" name="transit_days" value="{{ form.transit_days }}" inputmode="numeric" placeholder="Для «в пути» / «под заказ»">
+    </label>
+    <label class="a-field">
+      <span class="a-label">Город доставки</span>
+      <input class="a-input" name="delivery_city" value="{{ form.delivery_city }}" placeholder="Для проданных">
+    </label>
+    {% endif %}
+  </div>
+
+  <div class="a-form-divider"></div>
+  <span class="sec-tag">// Аукционные данные</span>
+
+  <div class="a-form-grid">
+    <label class="a-field">
+      <span class="a-label">Аукцион</span>
+      <input class="a-input" name="auction_name" value="{{ form.auction_name }}" placeholder="USS / TAA / JU">
+    </label>
+    <label class="a-field">
+      <span class="a-label">Лот на аукционе</span>
+      <input class="a-input" name="auction_lot" value="{{ form.auction_lot }}">
+    </label>
+    <label class="a-field">
+      <span class="a-label">Цена аукциона, ¥</span>
+      <input class="a-input" name="auction_price_yen" value="{{ form.auction_price_yen }}" inputmode="numeric">
+    </label>
+    <label class="a-field">
+      <span class="a-label">Оценка</span>
+      <input class="a-input" name="rating" value="{{ form.rating }}" placeholder="4.5">
+    </label>
+  </div>
+
+  <div class="a-form-divider"></div>
+
+  <div class="a-ai-block">
+    <div>
+      <span class="sec-tag">// AI-описание</span>
+      <p class="a-muted">Сервер попросит OpenRouter написать короткое описание по характеристикам. Текст можно скопировать в объявление.</p>
+    </div>
+    <button type="button" class="a-btn a-btn-ghost"
+            hx-post="/admin/ai/description" hx-include="#carForm" hx-target="#aiDescription" hx-swap="innerHTML">
+      Сгенерировать описание
+    </button>
+  </div>
+  <div id="aiDescription"></div>
+
+  <div class="a-form-actions">
+    <button type="submit" class="a-btn a-btn-solid">{% if is_edit %}Сохранить изменения{% else %}Создать автомобиль{% endif %} <span class="ar">→</span></button>
+    {% if is_edit %}
+    <a class="a-btn a-btn-ghost" href="/admin/cars/{{ car_id.unwrap_or(0) }}">Отмена</a>
+    {% else %}
+    <a class="a-btn a-btn-ghost" href="/admin/cars">Отмена</a>
+    {% endif %}
+  </div>
+</form>

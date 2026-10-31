@@ -1,0 +1,57 @@
+<section id="photosGrid" class="a-card a-photos-card">
+  <div class="a-card-head">
+    <div>
+      <span class="sec-tag">Фотографии</span>
+      <h2 class="a-h2">Галерея <small class="a-count">{{ car.images.len() }}</small></h2>
+    </div>
+  </div>
+
+  <form method="post" action="/admin/cars/{{ car.id }}/images" enctype="multipart/form-data"
+        class="a-upload"
+        hx-post="/admin/cars/{{ car.id }}/images" hx-encoding="multipart/form-data"
+        hx-target="#photosGrid" hx-swap="outerHTML">
+    <label class="a-field a-field-grow">
+      <span class="a-label">Добавить фото (JPEG, PNG, WebP · до 15 МБ)</span>
+      <input class="a-input a-file" type="file" name="files" accept="image/jpeg,image/png,image/webp" multiple required>
+    </label>
+    <button type="submit" class="a-btn a-btn-solid">Загрузить</button>
+  </form>
+
+  {% if car.images.is_empty() %}
+  <p class="a-empty">Фотографий пока нет. Первое загруженное фото станет обложкой.</p>
+  {% else %}
+  <div class="a-photos">
+    {% for url in car.images %}
+    <figure class="a-photo{% if loop.first %} is-cover{% endif %}">
+      <img src="{{ url }}" alt="Фото {{ loop.index }}" loading="lazy">
+      {% if loop.first %}<figcaption class="a-cover-badge">Обложка</figcaption>{% endif %}
+      <div class="a-photo-tools">
+        <form method="post" action="/admin/cars/{{ car.id }}/images/cover"
+              hx-post="/admin/cars/{{ car.id }}/images/cover" hx-target="#photosGrid" hx-swap="outerHTML">
+          <input type="hidden" name="url" value="{{ url }}">
+          <button type="submit" class="a-mini-btn" {% if loop.first %}disabled{% endif %} title="Сделать обложкой">★</button>
+        </form>
+        <form method="post" action="/admin/cars/{{ car.id }}/images/move"
+              hx-post="/admin/cars/{{ car.id }}/images/move" hx-target="#photosGrid" hx-swap="outerHTML">
+          <input type="hidden" name="url" value="{{ url }}">
+          <input type="hidden" name="direction" value="up">
+          <button type="submit" class="a-mini-btn" {% if loop.first %}disabled{% endif %} title="Выше">←</button>
+        </form>
+        <form method="post" action="/admin/cars/{{ car.id }}/images/move"
+              hx-post="/admin/cars/{{ car.id }}/images/move" hx-target="#photosGrid" hx-swap="outerHTML">
+          <input type="hidden" name="url" value="{{ url }}">
+          <input type="hidden" name="direction" value="down">
+          <button type="submit" class="a-mini-btn" {% if loop.last %}disabled{% endif %} title="Ниже">→</button>
+        </form>
+        <form method="post" action="/admin/cars/{{ car.id }}/images/delete"
+              hx-post="/admin/cars/{{ car.id }}/images/delete" hx-target="#photosGrid" hx-swap="outerHTML"
+              hx-confirm="Удалить это фото?">
+          <input type="hidden" name="url" value="{{ url }}">
+          <button type="submit" class="a-mini-btn a-mini-danger" title="Удалить">×</button>
+        </form>
+      </div>
+    </figure>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>

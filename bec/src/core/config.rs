@@ -88,6 +88,12 @@ pub struct Config {
     pub openrouter_model: String,
     /// Базовый адрес OpenRouter; нужен для подмены в тестах (мок-сервер).
     pub openrouter_base_url: String,
+    /// Ставить ли флаг `Secure` на cookie админской сессии.
+    ///
+    /// По умолчанию включён в prod (сайт работает по HTTPS) и выключен в dev.
+    /// Переменная `ADMIN_COOKIE_SECURE` позволяет переопределить это, например
+    /// для локального запуска прод-конфига без TLS.
+    pub admin_cookie_secure: bool,
     pub environment: Environment,
 }
 
@@ -122,6 +128,10 @@ impl Config {
                 .unwrap_or_else(|| DEFAULT_OPENROUTER_MODEL.to_string()),
             openrouter_base_url: optional_var("OPENROUTER_BASE_URL")
                 .unwrap_or_else(|| DEFAULT_OPENROUTER_BASE_URL.to_string()),
+            admin_cookie_secure: match optional_var("ADMIN_COOKIE_SECURE") {
+                Some(raw) => parse_bool("ADMIN_COOKIE_SECURE", &raw)?,
+                None => !environment.is_dev(),
+            },
             environment,
         })
     }
@@ -191,6 +201,7 @@ impl Config {
             openrouter_api_key: None,
             openrouter_model: DEFAULT_OPENROUTER_MODEL.to_string(),
             openrouter_base_url: DEFAULT_OPENROUTER_BASE_URL.to_string(),
+            admin_cookie_secure: false,
             environment: Environment::Development,
         }
     }
@@ -209,6 +220,20 @@ fn optional_var(name: &str) -> Option<String> {
         .ok()
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
+}
+
+/// Разбирает булев флаг (`true/false`, `1/0`, `yes/no`).
+///
+/// Неизвестное значение — ошибка конфигурации: молча трактовать его как
+/// `false` опасно, можно случайно выключить `Secure` в проде.
+fn parse_bool(name: &str, raw: &str) -> Result<bool, String> {
+    match raw.trim().to_ascii_lowercase().as_str() {
+        "1" | "true" | "yes" | "on" => Ok(true),
+        "0" | "false" | "no" | "off" => Ok(false),
+        other => Err(format!(
+            "{name}='{other}' не является булевым значением (true/false, 1/0, yes/no)"
+        )),
+    }
 }
 
 /// `SERVER_PORT` хранится строкой, но нужен как число — валидируем сразу.

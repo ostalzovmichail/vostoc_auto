@@ -1,4 +1,5 @@
-use crate::api::handlers::{admin, ai, basic, cars, pages};
+use crate::api::admin;
+use crate::api::handlers::{ai, basic, cars, pages};
 use crate::api::models::{
     service_unavailable, unauthorized, ApiResponse, Car, Contact, ResponseStatus, Stats,
 };
@@ -9,7 +10,7 @@ use axum::{
     http::{header, HeaderName, HeaderValue, Method},
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::{delete, get, patch, post},
+    routing::{get, patch, post},
     Router,
 };
 use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
@@ -50,8 +51,9 @@ pub fn create_router(state: AppState) -> Router {
 
     // Админ-маршруты оборачиваем проверкой токена. `from_fn_with_state` получает
     // копию состояния, поэтому проверка работает ещё до `with_state`.
-    let admin =
+    let admin_api =
         admin_routes().route_layer(middleware::from_fn_with_state(state.clone(), require_admin));
+    let admin_pages = admin::routes::router(state.clone());
 
     // Счётчик посещений вешаем на весь роутер: сам middleware считает только
     // запросы к публичной странице `/ui/`.
@@ -59,7 +61,8 @@ pub fn create_router(state: AppState) -> Router {
 
     let mut router = Router::new()
         .merge(api_routes())
-        .merge(admin)
+        .merge(admin_api)
+        .merge(admin_pages)
         .merge(partials_routes())
         .merge(static_routes(&images_dir))
         .merge(frontend_routes());
@@ -104,19 +107,22 @@ fn admin_routes() -> Router<AppState> {
     Router::new()
         .route(
             "/api/admin/cars",
-            get(admin::list_handler).post(admin::create_handler),
+            get(admin::api::list_handler).post(admin::api::create_handler),
         )
-        .route("/api/admin/cars/:id", delete(admin::delete_handler))
+        .route(
+            "/api/admin/cars/:id",
+            patch(admin::api::update_handler).delete(admin::api::delete_handler),
+        )
         .route(
             "/api/admin/cars/:id/status",
-            patch(admin::set_status_handler),
+            patch(admin::api::set_status_handler),
         )
         .route(
             "/api/admin/cars/:id/images",
-            post(admin::upload_image_handler).delete(admin::delete_image_handler),
+            post(admin::api::upload_image_handler).delete(admin::api::delete_image_handler),
         )
         // Счётчик посещений сайта: числа видит только админка.
-        .route("/api/admin/stats/visits", get(admin::visits_handler))
+        .route("/api/admin/stats/visits", get(admin::api::visits_handler))
         // AI-функции: генерация текстов через OpenRouter. Тоже под токеном —
         // обращение к платному провайдеру не должно быть доступно всем.
         .route("/api/admin/ai/description", post(ai::describe_handler))
@@ -379,12 +385,33 @@ mod tests {
             Err(sqlx::Error::PoolTimedOut)
         }
 
-        async fn admin_list_cars(
+        async fn admin_filter_cars(
             &self,
-            _status: Option<&str>,
-            _limit: i64,
-            _offset: i64,
+            _filter: &crate::core::models::AdminCarFilter,
         ) -> Result<Vec<Car>, sqlx::Error> {
+            Err(sqlx::Error::PoolTimedOut)
+        }
+
+        async fn admin_cars_total(
+            &self,
+            _filter: &crate::core::models::AdminCarFilter,
+        ) -> Result<i64, sqlx::Error> {
+            Err(sqlx::Error::PoolTimedOut)
+        }
+
+        async fn update_car(
+            &self,
+            _id: i64,
+            _update: &crate::core::models::CarUpdate,
+        ) -> Result<Option<Car>, sqlx::Error> {
+            Err(sqlx::Error::PoolTimedOut)
+        }
+
+        async fn reorder_car_images(
+            &self,
+            _car_id: i64,
+            _ordered: &[String],
+        ) -> Result<bool, sqlx::Error> {
             Err(sqlx::Error::PoolTimedOut)
         }
 
@@ -1189,5 +1216,399 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
+    }
+    // ── Веб-админка: cookie-сессия и HTML-маршруты ─────────────────────────
+
+    /// Кука валидной админской сессии для тестовых запросов.
+    fn admin_cookie() -> String {
+        let (value, _) = crate::api::admin::session::issue(
+            crate::core::config::TEST_ADMIN_TOKEN,
+            crate::api::admin::session::now_unix(),
+        );
+        format!("bec_admin={value}")
+    }
+
+    /// GET-запрос к защищённой странице админки с cookie.
+    fn admin_page(uri: &str) -> Request<Body> {
+        Request::builder()
+            .uri(uri)
+            .header("cookie", admin_cookie())
+            .body(Body::empty())
+            .unwrap()
+    }
+
+    /// POST-запрос к админке с cookie и form-urlencoded телом.
+    fn admin_page_form(uri: &str, body: &str, htmx: bool) -> Request<Body> {
+        let mut builder = Request::builder()
+            .method("POST")
+            .uri(uri)
+            .header("cookie", admin_cookie())
+            .header("content-type", "application/x-www-form-urlencoded");
+        if htmx {
+            builder = builder.header("hx-request", "true");
+        }
+        builder.body(Body::from(body.to_string())).unwrap()
+    }
+
+    #[tokio::test]
+    async fn test_admin_page_redirects_without_session() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .uri("/admin/")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::SEE_OTHER);
+        assert_eq!(
+            response
+                .headers()
+                .get(axum::http::header::LOCATION)
+                .and_then(|value| value.to_str().ok()),
+            Some("/admin/login")
+        );
+    }
+
+    #[tokio::test]
+    async fn test_admin_page_rejects_tampered_cookie() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .uri("/admin/")
+                    .header("cookie", "bec_admin=1.deadbeef")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::SEE_OTHER);
+    }
+
+    #[tokio::test]
+    async fn test_admin_login_page_and_successful_login() {
+        let app = test_app().await;
+
+        let page = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/admin/login")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(page.status(), StatusCode::OK);
+        assert!(text_body(page).await.contains("Вход в админку"));
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/admin/login")
+                    .header("content-type", "application/x-www-form-urlencoded")
+                    .body(Body::from(format!(
+                        "token={}",
+                        crate::core::config::TEST_ADMIN_TOKEN
+                    )))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::SEE_OTHER);
+        let cookie = response
+            .headers()
+            .get(axum::http::header::SET_COOKIE)
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or_default();
+        assert!(cookie.contains("bec_admin="));
+        assert!(cookie.contains("HttpOnly"));
+        assert!(cookie.contains("SameSite=Strict"));
+    }
+
+    #[tokio::test]
+    async fn test_admin_login_rejects_wrong_token() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/admin/login")
+                    .header("content-type", "application/x-www-form-urlencoded")
+                    .body(Body::from("token=wrong"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(text_body(response).await.contains("Неверный токен"));
+    }
+
+    #[tokio::test]
+    async fn test_admin_dashboard_and_cars_page_render() {
+        let app = test_app().await;
+
+        let dashboard = app.clone().oneshot(admin_page("/admin/")).await.unwrap();
+        assert_eq!(dashboard.status(), StatusCode::OK);
+        let html = text_body(dashboard).await;
+        assert!(html.contains("Панель управления"));
+        assert!(html.contains("Посещения"));
+        assert!(html.contains("Недавно добавленные"));
+
+        let cars = app
+            .clone()
+            .oneshot(admin_page("/admin/cars"))
+            .await
+            .unwrap();
+        assert_eq!(cars.status(), StatusCode::OK);
+        let html = text_body(cars).await;
+        assert!(html.contains("Chevrolet Monza"));
+        assert!(html.contains("carsFilters"));
+
+        let partial = app
+            .oneshot(admin_page("/admin/partials/cars?q=monza"))
+            .await
+            .unwrap();
+        assert_eq!(partial.status(), StatusCode::OK);
+        let html = text_body(partial).await;
+        assert!(html.contains("Chevrolet Monza"));
+        assert!(!html.contains("Honda XR-V"));
+    }
+
+    #[tokio::test]
+    async fn test_admin_page_create_update_status_delete() {
+        let app = test_app().await;
+        let body = "brand=HtmlTest&model=Panel&year=2024&mileage=1000&engine=1.6&\
+                    transmission=AT&drive=FWD&price_rub=1000000&status=stock";
+
+        let created = app
+            .clone()
+            .oneshot(admin_page_form("/admin/cars", body, false))
+            .await
+            .unwrap();
+        assert_eq!(created.status(), StatusCode::SEE_OTHER);
+        let location = created
+            .headers()
+            .get(axum::http::header::LOCATION)
+            .and_then(|value| value.to_str().ok())
+            .unwrap()
+            .to_string();
+        assert!(location.starts_with("/admin/cars/"));
+        let id = location.rsplit('/').next().unwrap();
+
+        let updated = app
+            .clone()
+            .oneshot(admin_page_form(
+                &format!("/admin/cars/{id}"),
+                "lot_number=0999&brand=HtmlTest&model=PanelUpdated&year=2024&\
+                 mileage=2000&engine=1.6&transmission=AT&drive=FWD&price_rub=1100000",
+                false,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(updated.status(), StatusCode::SEE_OTHER);
+
+        let status = app
+            .clone()
+            .oneshot(admin_page_form(
+                &format!("/admin/cars/{id}/status"),
+                "status=transit&transit_days=12",
+                true,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(status.status(), StatusCode::OK);
+        let html = text_body(status).await;
+        assert!(html.contains("id=\"statusCard\""));
+        assert!(html.contains("a-toast-ok"));
+
+        let deleted = app
+            .clone()
+            .oneshot(admin_page_form(
+                &format!("/admin/cars/{id}/delete"),
+                "",
+                false,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(deleted.status(), StatusCode::SEE_OTHER);
+
+        let list = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/admin/cars?q=HtmlTest")
+                    .header("x-admin-token", crate::core::config::TEST_ADMIN_TOKEN)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert!(json_body(list).await.as_array().unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_admin_rejects_cross_origin_mutation() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/admin/cars/1/delete")
+                    .header("cookie", admin_cookie())
+                    .header("origin", "https://evil.example")
+                    .header("host", "127.0.0.1:8080")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    }
+
+    #[tokio::test]
+    async fn test_admin_photo_upload_and_cover() {
+        let app = test_app().await;
+
+        // Берём реальное авто из сида с галереей.
+        let latest = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/cars/latest")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let car = json_body(latest).await;
+        let id = car["id"].as_i64().unwrap();
+
+        let payload: &[u8] = b"fake-jpeg-bytes";
+        let boundary = "bec-admin-boundary";
+        let mut body = Vec::new();
+        body.extend_from_slice(format!("--{boundary}\r\n").as_bytes());
+        body.extend_from_slice(
+            b"Content-Disposition: form-data; name=\"files\"; filename=\"photo.jpg\"\r\n",
+        );
+        body.extend_from_slice(b"Content-Type: image/jpeg\r\n\r\n");
+        body.extend_from_slice(payload);
+        body.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
+
+        let upload = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(format!("/admin/cars/{id}/images"))
+                    .header("cookie", admin_cookie())
+                    .header("hx-request", "true")
+                    .header(
+                        "content-type",
+                        format!("multipart/form-data; boundary={boundary}"),
+                    )
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(upload.status(), StatusCode::OK);
+        let html = text_body(upload).await;
+        assert!(html.contains("id=\"photosGrid\""));
+        assert!(html.contains("a-toast-ok"));
+
+        // Вторая фотография уже была в сиде: делаем её обложкой.
+        let detail = app
+            .clone()
+            .oneshot(admin_page(&format!("/admin/cars/{id}")))
+            .await
+            .unwrap();
+        let detail_html = text_body(detail).await;
+        let urls: Vec<&str> = detail_html
+            .split("name=\"url\" value=\"")
+            .skip(1)
+            .filter_map(|part| part.split('"').next())
+            .collect();
+        let second = urls.get(1).copied().expect("в сиде есть минимум 2 фото");
+
+        let cover = app
+            .oneshot(admin_page_form(
+                &format!("/admin/cars/{id}/images/cover"),
+                &format!("url={second}"),
+                true,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(cover.status(), StatusCode::OK);
+        let cover_html = text_body(cover).await;
+        assert!(cover_html.contains("a-toast-ok"));
+        assert!(cover_html.contains("Обложка"));
+    }
+
+    #[tokio::test]
+    async fn test_contacts_api_has_no_telegram() {
+        let response = test_app()
+            .await
+            .oneshot(
+                Request::builder()
+                    .uri("/api/contacts")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let json = json_body(response).await;
+        assert!(json.get("telegram").is_none());
+    }
+    #[tokio::test]
+    async fn test_admin_form_validation_returns_fragment() {
+        let response = test_app()
+            .await
+            .oneshot(admin_page_form(
+                "/admin/cars",
+                "brand=&model=&year=1800",
+                true,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+        let html = text_body(response).await;
+        assert!(html.contains("id=\"carForm\""));
+        assert!(html.contains("Проверьте форму"));
+        assert!(html.contains("Укажите марку"));
+    }
+
+    #[tokio::test]
+    async fn test_admin_status_validation_returns_toast_error() {
+        let app = test_app().await;
+        let latest = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/cars/latest")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let id = json_body(latest).await["id"].as_i64().unwrap();
+
+        let response = app
+            .oneshot(admin_page_form(
+                &format!("/admin/cars/{id}/status"),
+                "status=hacked",
+                true,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let html = text_body(response).await;
+        assert!(html.contains("id=\"statusCard\""));
+        assert!(html.contains("a-toast-error"));
+        assert!(html.contains("Недопустимый статус"));
     }
 }

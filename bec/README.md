@@ -16,10 +16,20 @@ src/
 │   ├── router.rs        # Сборка роутера: маршруты, Swagger (dev), CORS, трассировка
 │   ├── models.rs        # ApiResponse/helper'ы + реэкспорт моделей данных (Car/Stats/Contact)
 │   ├── templates.rs     # Шаблоны askama: HTML-фрагменты для страниц на htmx
+│   ├── admin/           # Веб-админка
+│   │   ├── routes.rs    # Маршруты /admin/* и статика /admin/assets
+│   │   ├── auth.rs      # Вход по ADMIN_TOKEN и cookie-сессия
+│   │   ├── session.rs   # Подпись cookie, лимитер попыток входа
+│   │   ├── pages.rs     # GET-страницы и htmx-фрагменты
+│   │   ├── actions.rs   # POST-действия админки
+│   │   ├── api.rs       # JSON API /api/admin/*
+│   │   ├── forms.rs     # Разбор и валидация HTML-форм
+│   │   ├── media.rs     # Загрузка/удаление фото, безопасные пути
+│   │   └── templates.rs # Askama-структуры админки
 │   └── handlers/
 │       ├── basic.rs     # Эндпоинты: /, /test, /db
 │       ├── cars.rs      # JSON API: /api/cars, /api/cars/latest, /api/cars/sold, /api/stats, /api/contacts
-│       ├── admin.rs     # Админ-API (запись): /api/admin/cars — добавление, удаление, статус, фото
+│       ├── ai.rs        # AI-генерация описаний (JSON + HTML)
 │       └── pages.rs     # HTML-фрагменты: /partials/hero, /partials/catalog, /partials/sold, ...
 └── core/
     ├── config.rs        # Конфигурация: окружение (dev/prod), валидация переменных
@@ -27,9 +37,11 @@ src/
     ├── models.rs        # Модели данных: Car, Stats, Contact + display-хелперы и фильтр каталога
     └── logging.rs       # JSON-логи с ротацией по датам: logs/YYYY/MM/DD/
 
-templates/partials/      # Шаблоны askama (компилируются вместе с крейтом)
+templates/partials/      # Шаблоны askama публичного сайта
+templates/admin/         # Шаблоны askama веб-админки
 static/images/           # Фотографии автомобилей (раздаются по /images)
-frontend/                # Новый фронтенд: HTML + CSS + htmx (раздаётся по /ui/)
+frontend/                # Публичный фронтенд: HTML + CSS + htmx (раздаётся по /ui/)
+frontend/admin/          # CSS/JS админки (раздаётся по /admin/assets/)
 ```
 
 Каталог `static/images/` — статика (фотографии автомобилей), раздаётся по `/images`. В БД (таблица `car_images`) хранятся относительные пути; абсолютный адрес (хост API) подставляет фронтенд, поэтому данные не привязаны к окружению.
@@ -97,7 +109,8 @@ cp .env.example .env       # для продакшена
 | `SERVER_PORT` | да | Порт, число 0–65535 |
 | `START_MESSAGE` | да | Приветственное сообщение при старте |
 | `CORS_ALLOWED_ORIGINS` | нет | **Только prod**: разрешённые origin'ы через запятую. Пусто — CORS-заголовки не отдаются, чужие origin'ы блокируются браузером |
-| `ADMIN_TOKEN` | нет | Токен приложения управления (заголовок `X-Admin-Token`). Не задан — маршруты `/api/admin/*` отвечают `503`, а сайт работает как обычно |
+| `ADMIN_TOKEN` | нет | Токен входа в веб-админку и заголовка `X-Admin-Token` для `/api/admin/*`. Не задан — админка и админ-API отключены, сайт работает как обычно |
+| `ADMIN_COOKIE_SECURE` | нет | Флаг `Secure` у cookie веб-админки. По умолчанию `true` в prod, `false` в dev. На проде должен быть HTTPS |
 | `IMAGES_DIR` | нет | Каталог фотографий (по умолчанию `static/images`). Один и тот же для раздачи `/images` и для сохранения фото из админ-API |
 | `RUST_LOG` | нет | Переопределяет фильтр логирования (напр. `info,tower_http=warn`) |
 
@@ -127,15 +140,18 @@ APP_ENV=prod cargo run
 | `GET /api/cars/sold` | Проданные автомобили (свежие сделки первыми) |
 | `GET /api/stats` | Статистика базы: всего / в наличии / в пути / под заказ / продано |
 | `GET /api/contacts` | Контактная информация автосалона |
-| `GET /api/admin/cars?status=&limit=&offset=` | **Админ-API.** Все автомобили, включая проданные. Требует `X-Admin-Token` |
+| `GET /api/admin/cars?status=&q=&sort=&limit=&offset=` | **Админ-API.** Все автомобили, включая проданные. Поиск `q`, сортировка `sort` (`new`, `price-asc`, `price-desc`, `mileage`, `sold`). Требует `X-Admin-Token` |
 | `POST /api/admin/cars` | **Админ-API.** Добавить авто (JSON). Номер лота сервер присвоит сам, если не передан |
+| `PATCH /api/admin/cars/:id` | **Админ-API.** Изменить характеристики авто (статус — отдельным маршрутом) |
 | `PATCH /api/admin/cars/:id/status` | **Админ-API.** Сменить статус (`stock`/`transit`/`order`/`sold`). При `sold` проставляются дата продажи и срок сделки |
 | `DELETE /api/admin/cars/:id` | **Админ-API.** Удалить авто вместе с фотографиями (файлы тоже удаляются) |
 | `POST /api/admin/cars/:id/images` | **Админ-API.** Загрузить фото (multipart, поле `file`; JPEG/PNG/WebP до 15 МБ) |
 | `DELETE /api/admin/cars/:id/images?url=/images/...` | **Админ-API.** Удалить одно фото |
 | `GET /api/admin/stats/visits` | **Админ-API.** Счётчик посещений сайта: всего / сегодня / за 7 дней. На публичной странице не показывается |
 | `GET /images/<путь>` | Статические файлы из `static/images/` — фотографии авто. Пример: `/images/honda-xr-v-2023/honda-xr-v-2023-1.jpeg` |
-| `GET /ui/` | Страница фронтенда (HTML + CSS + htmx) из `frontend/` |
+| `GET /ui/` | Публичная страница (HTML + CSS + htmx) из `frontend/` |
+| `GET /admin/login` | Форма входа в веб-админку |
+| `GET /admin/` | Веб-админка (после входа), раздаётся тем же сервером |
 | `GET /partials/hero` | HTML-фрагмент: главный акцент. `?random=1` — случайное авто из последних 10 (ротация на главной) |
 | `GET /partials/catalog?status=&q=&sort=` | HTML-фрагмент: карточки каталога. `status`: `stock`,`transit`,`order`; `q` — поиск; `sort`: `new`,`price-asc`,`price-desc`,`mileage` |
 | `GET /partials/car/:id` | HTML-фрагмент: подробное описание авто для модалки каталога |
@@ -161,22 +177,56 @@ APP_ENV=prod cargo run
 ```
 При серверных ошибках возвращается `500` и generic-сообщение, детали — только в логах.
 
-## Админ-API и приложение управления
+## Веб-админка `/admin`
+
+Админка сделана по той же архитектуре, что и публичный сайт: askama-шаблоны,
+htmx, CSS из `frontend/admin/`, без отдельного SPA и без Flutter.
+
+### Вход и сессия
+
+1. Открыть `/admin/login`.
+2. Ввести `ADMIN_TOKEN` из `.env` / `.env.dev`.
+3. Сервер сравнивает токен за постоянное время и выдаёт HttpOnly cookie
+   `bec_admin` с подписью HMAC-SHA256 и сроком 12 часов.
+4. Смена `ADMIN_TOKEN` инвалидирует все выданные сессии.
+5. Cookie: `SameSite=Strict`, `Path=/admin`, `Secure` — в prod (или по
+   `ADMIN_COOKIE_SECURE`). Токен не хранится в localStorage и не попадает в JS.
+
+Неудачные попытки входа ограничены по IP (8 попыток за 10 минут). Изменяющие
+запросы дополнительно проверяются по `Origin`/`Sec-Fetch-Site`.
+
+### Страницы
+
+| Метод | Путь | Назначение |
+|---|---|---|
+| `GET` | `/admin/` | Дашборд: статистика, посещения, последние авто |
+| `GET` | `/admin/cars` | Список с поиском, фильтром и пагинацией |
+| `GET` | `/admin/cars/new` | Форма создания |
+| `GET` | `/admin/cars/:id` | Карточка: характеристики, статус, фото |
+| `GET` | `/admin/cars/:id/edit` | Редактирование характеристик |
+| `POST` | `/admin/cars` | Создать авто |
+| `POST` | `/admin/cars/:id` | Сохранить характеристики |
+| `POST` | `/admin/cars/:id/status` | Сменить статус |
+| `POST` | `/admin/cars/:id/delete` | Удалить авто и фото |
+| `POST` | `/admin/cars/:id/images` | Загрузить одно или несколько фото |
+| `POST` | `/admin/cars/:id/images/cover` | Сделать фото обложкой |
+| `POST` | `/admin/cars/:id/images/move` | Сдвинуть фото выше/ниже |
+| `POST` | `/admin/cars/:id/images/delete` | Удалить фото |
+| `POST` | `/admin/ai/description` | Сгенерировать описание через OpenRouter |
+| `GET` | `/admin/partials/cars` | htmx-фрагмент таблицы |
+| `GET` | `/admin/partials/visits` | htmx-фрагмент счётчика посещений |
+
+### JSON API для скриптов
 
 Публичные маршруты (`/api/*`, `/partials/*`) только читают данные. Менять каталог
 можно через `/api/admin/*` — эти маршруты требуют заголовок `X-Admin-Token`
-со значением `ADMIN_TOKEN` и сравнивают его за постоянное время
-(чтобы токен нельзя было подобрать по времени ответа).
+со значением `ADMIN_TOKEN` и сравнивают его за постоянное время.
 
-- **Токен не задан** → все `/api/admin/*` отвечают `503`: честнее сказать
-  «не настроено», чем оставить запись данных открытой.
+- **Токен не задан** → все `/api/admin/*` отвечают `503`, а страницы `/admin/*`
+  показывают, что админка отключена.
 - **Неверный токен** → `401`.
-- Префикс `/api/admin/*` выбран намеренно: админ-маршруты не должны выглядеть
-  как публичные.
-
-Готовый клиент — приложение на Flutter в `../admin_app` (Android, iOS, Windows,
-Linux, macOS, Web): добавление и удаление авто, смена статуса, загрузка фото.
-Подробности — в `../admin_app/README.md`.
+- Веб-админка использует отдельные HTML-маршруты и cookie-сессию; JSON API
+  оставлен для внешних клиентов и автоматизации.
 
 Пример: добавить авто и отметить проданным.
 

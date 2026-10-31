@@ -97,7 +97,6 @@ pub struct Contact {
     pub company_name: String,
     pub inn: String,
     pub ogrn: String,
-    pub telegram: Option<String>,
     pub whatsapp: Option<String>,
     pub youtube: Option<String>,
 }
@@ -245,12 +244,23 @@ impl Car {
         )
     }
 
-    /// CSS-класс плашки статуса (`stock` | `transit` | `order`).
+    /// CSS-класс плашки статуса (`stock` | `transit` | `order` | `sold`).
     pub fn status_class(&self) -> &'static str {
         match self.status.as_str() {
             "transit" => "transit",
             "order" => "order",
+            "sold" => "sold",
             _ => "stock",
+        }
+    }
+
+    /// Русская подпись статуса для админки (в публичном каталоге проданных нет).
+    pub fn status_ru(&self) -> &'static str {
+        match self.status.as_str() {
+            "transit" => "В пути",
+            "order" => "Под заказ",
+            "sold" => "Продан",
+            _ => "В наличии",
         }
     }
 
@@ -261,6 +271,7 @@ impl Car {
             ("transit", None) => "В пути".to_string(),
             ("order", Some(days)) => format!("Под заказ · ~{}", plural_days(days)),
             ("order", None) => "Под заказ".to_string(),
+            ("sold", _) => "Продан".to_string(),
             _ => "В наличии".to_string(),
         }
     }
@@ -333,6 +344,18 @@ impl Car {
     pub fn delivery_city_display(&self) -> String {
         option_or_dash(&self.delivery_city)
     }
+
+    /// Значение для поля формы «срок доставки».
+    pub fn transit_days_value(&self) -> String {
+        self.transit_days
+            .map(|days| days.to_string())
+            .unwrap_or_default()
+    }
+
+    /// Значение для поля формы «город доставки».
+    pub fn delivery_city_value(&self) -> String {
+        self.delivery_city.clone().unwrap_or_default()
+    }
 }
 
 impl Contact {
@@ -391,20 +414,12 @@ impl Contact {
         self.whatsapp.clone().unwrap_or_else(|| "#".to_string())
     }
 
-    pub fn telegram_href(&self) -> String {
-        self.telegram.clone().unwrap_or_else(|| "#".to_string())
-    }
-
     pub fn youtube_href(&self) -> String {
         self.youtube.clone().unwrap_or_else(|| "#".to_string())
     }
 
     pub fn has_whatsapp(&self) -> bool {
         has_contact_link(&self.whatsapp)
-    }
-
-    pub fn has_telegram(&self) -> bool {
-        has_contact_link(&self.telegram)
     }
 
     pub fn has_youtube(&self) -> bool {
@@ -432,6 +447,21 @@ pub struct CarFilter {
     /// Поиск по марке, модели и номеру лота.
     pub query: Option<String>,
     /// Сортировка: `new` (по умолчанию), `price-asc`, `price-desc`, `mileage`.
+    pub sort: Option<String>,
+    pub limit: i64,
+    pub offset: i64,
+}
+
+/// Фильтр админского списка автомобилей.
+///
+/// Отличается от [`CarFilter`] тем, что без статуса отдаёт и проданные:
+/// в админке нужен полный список.
+#[derive(Debug, Clone, Default)]
+pub struct AdminCarFilter {
+    pub status: Option<String>,
+    /// Поиск по марке, модели и номеру лота.
+    pub query: Option<String>,
+    /// `new` (по умолчанию), `price-asc`, `price-desc`, `mileage`.
     pub sort: Option<String>,
     pub limit: i64,
     pub offset: i64,
@@ -479,6 +509,31 @@ pub struct NewCar {
     /// Обложка объявления (если задана без галереи).
     #[serde(default)]
     pub image_url: Option<String>,
+}
+
+/// Изменение характеристик автомобиля (`PATCH /api/admin/cars/{id}`).
+///
+/// Статус меняется отдельным маршрутом: у него своя логика (дата продажи,
+/// срок сделки), которую не нужно смешивать с редактированием полей.
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+pub struct CarUpdate {
+    pub lot_number: String,
+    pub brand: String,
+    pub model: String,
+    pub year: i64,
+    pub mileage: i64,
+    pub engine: String,
+    pub transmission: String,
+    pub drive: String,
+    pub price_rub: i64,
+    #[serde(default)]
+    pub auction_price_yen: Option<i64>,
+    #[serde(default)]
+    pub auction_name: Option<String>,
+    #[serde(default)]
+    pub auction_lot: Option<String>,
+    #[serde(default)]
+    pub rating: Option<String>,
 }
 
 /// Смена статуса автомобиля (`PATCH /api/admin/cars/{id}/status`).

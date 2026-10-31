@@ -1,0 +1,54 @@
+/* =====================================================================
+   Админка — адаптив.
+   ===================================================================== */
+
+@media (max-width: 1100px){
+  .a-stats{grid-template-columns:repeat(3,1fr)}
+  .a-detail-grid{grid-template-columns:1fr}
+  .a-detail-side{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+  .a-detail-side .a-card{margin-bottom:0}
+  .a-form-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media (max-width: 900px){
+  .a-tr{grid-template-columns:minmax(180px,2fr) .8fr .9fr 24px}
+  .a-tr > :nth-child(5){display:none}
+  .a-thead > :nth-child(5){display:none}
+  .a-dash-grid{grid-template-columns:1fr}
+  .a-dash-grid .a-card{margin-bottom:0}
+  .a-dash-grid > .a-card + .a-card{margin-top:22px}
+}
+
+@media (max-width: 760px){
+  .a-header-in{height:auto;padding-top:12px;padding-bottom:12px;flex-wrap:wrap;gap:12px}
+  .a-nav{order:3;width:100%;justify-content:space-between}
+  .a-logout{margin-left:0}
+  .a-main{padding:26px 0 60px}
+  .a-page-head{align-items:flex-start}
+  .a-stats{grid-template-columns:repeat(2,1fr)}
+  .a-stat:nth-child(5){grid-column:1/-1}
+  .a-detail-side{grid-template-columns:1fr}
+  .a-form-grid{grid-template-columns:1fr}
+  .a-photos{grid-template-columns:repeat(2,1fr)}
+  .a-filters{align-items:stretch}
+  .a-field-inline,.a-field-grow{flex:1 1 100%}
+  .a-table-wrap{padding:4px 12px 14px}
+  .a-thead{display:none}
+  .a-tr{grid-template-columns:1fr auto;gap:8px 12px;padding:14px 2px}
+  .a-tr > :nth-child(2){grid-column:1;grid-row:2}
+  .a-tr > :nth-child(3){grid-column:2;grid-row:1;justify-self:end}
+  .a-tr > :nth-child(4){grid-column:1;grid-row:3}
+  .a-tr > :nth-child(5){display:none}
+  .a-tr > :nth-child(6){grid-column:2;grid-row:3;justify-self:end}
+  .a-td-car{grid-column:1/-1;grid-row:1}
+  .a-pager{justify-content:space-between;gap:8px}
+  .a-ai-result{flex-direction:column;align-items:stretch}
+  .a-toast{left:16px;right:16px;bottom:16px;max-width:none}
+}
+
+@media (max-width: 460px){
+  .a-stats{grid-template-columns:1fr 1fr}
+  .a-photos{grid-template-columns:1fr}
+  .a-specs{grid-template-columns:1fr}
+  .login-card{padding:24px 20px}
+}

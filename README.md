@@ -1,7 +1,7 @@
 # Берег
 
-Сайт автосалона «Берег»: каталог автомобилей из Японии, серверный фронтенд на htmx,
-админ-приложение на Flutter и вспомогательный Telegram-бот.
+Сайт автосалона «Берег»: каталог автомобилей, публичный серверный фронтенд на htmx
+и веб-админка на том же стеке.
 
 Репозиторий — монорепозиторий из нескольких независимых частей. Каждая часть
 собирается и тестируется отдельно; подробности — в её собственном README.
@@ -12,20 +12,14 @@
 
 ```
 bereg/
-├── bec/                 # Бэкенд + публичный сайт (Rust, axum)
+├── bec/                 # Бэкенд, публичный сайт и веб-админка (Rust, axum)
 │   ├── src/             # API, обработчики, БД, конфигурация
 │   ├── migrations/      # SQL-миграции (sqlx), включая реальные данные
 │   ├── templates/       # Askama-шаблоны HTML-фрагментов
-│   ├── frontend/        # index.html, CSS, JS, htmx — раздаётся на /ui/
+│   ├── frontend/        # публичный сайт (/ui/) и CSS/JS админки (/admin)
 │   ├── static/images/   # Фотографии автомобилей
 │   ├── .env.example     # Шаблон конфигурации
 │   └── README.md        # Подробно про API, конфиг и запуск
-│
-├── admin_app/           # Админ-приложение (Flutter, Android/iOS/Web/Desktop)
-│   └── AGENTS.md        # Архитектура, конвенции, команды
-│
-├── TG/                  # Telegram-бот (Rust, teloxide) — сохраняет тексты и фото
-│   └── README.md
 │
 ├── real_data/           # Исходные реальные данные (тексты и фото объявлений)
 ├── disain/              # Макет-референс «ВОСТОК АВТО» (не используется сервером)
@@ -38,9 +32,7 @@ bereg/
 
 | Часть | Технологии | Назначение |
 |---|---|---|
-| `bec` | Rust, axum, SQLite, sqlx, askama, htmx | Публичный сайт, JSON API, админ-API, раздача фото |
-| `admin_app` | Flutter, Riverpod 3, Material 3 | Управление каталогом: авто, статусы, фото |
-| `TG` | Rust, teloxide | Сохраняет присланные боту сообщения и фото на диск |
+| `bec` | Rust, axum, SQLite, sqlx, askama, htmx | Публичный сайт, JSON API, веб-админка `/admin`, раздача фото |
 
 ---
 
@@ -61,25 +53,17 @@ cargo run
 - Dev-база: `bec/dev_sqlite.db` (создаётся миграциями при старте)
 - Логи: `bec/logs/YYYY/MM/DD/`
 
-### 2. Админ-приложение
+### 2. Веб-админка
 
-```bash
-cd admin_app
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-flutter run
-```
+Открыть: **<http://localhost:8080/admin/>**
 
-В настройках приложения указать адрес сервера (`http://127.0.0.1:8080`) и
-`ADMIN_TOKEN` из `bec/.env.dev`. Для Android-эмулятора хост — `10.0.2.2`.
+Вход — по `ADMIN_TOKEN` из `bec/.env.dev` (или `bec/.env`). Токен вводится один
+раз в форму входа; сервер выдаёт HttpOnly cookie-сессию на 12 часов.
+Никакой отдельной сборки не нужно — админка раздаётся тем же сервером.
 
-### 3. Telegram-бот
-
-```bash
-cd TG
-cp .env.example .env          # вставьте токен от @BotFather
-cargo run
-```
+Возможности: дашборд, список авто с поиском и фильтрами, создание и
+редактирование, смена статуса, загрузка/удаление/сортировка фото и обложки,
+счётчик посещений, AI-генерация описания.
 
 ---
 
@@ -96,7 +80,8 @@ cargo run
 | `SERVER_PORT` | да | Порт (по умолчанию `8080`) |
 | `START_MESSAGE` | да | Сообщение при старте |
 | `CORS_ALLOWED_ORIGINS` | нет | Разрешённые origin'ы (только prod) |
-| `ADMIN_TOKEN` | нет | Токен админ-API; без него `/api/admin/*` отвечает `503` |
+| `ADMIN_TOKEN` | нет | Токен входа в веб-админку и админ-API; без него `/admin` и `/api/admin/*` отключены |
+| `ADMIN_COOKIE_SECURE` | нет | `Secure`-cookie админки: по умолчанию `true` в prod, `false` в dev |
 | `IMAGES_DIR` | нет | Каталог фото (по умолчанию `static/images`) |
 | `RUST_LOG` | нет | Фильтр логирования |
 | `OPENROUTER_API_KEY` | нет | Ключ для AI-генерации описаний; пусто — функция отключена |
@@ -121,6 +106,8 @@ cargo run
 | `GET` | `/ui/` | Публичная страница сайта |
 | `GET` | `/partials/*` | HTML-фрагменты для htmx |
 | `GET` | `/images/*` | Фотографии автомобилей |
+| `GET` | `/admin/` | Веб-админка: дашборд (после входа) |
+| `GET` | `/admin/login` | Форма входа в админку |
 
 Админ-маршруты (`/api/admin/*`) требуют заголовок `X-Admin-Token`:
 
@@ -138,12 +125,7 @@ cargo run
 
 ```bash
 cd bec && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
-# 33 passed
-
-cd TG && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
-# 8 passed
-
-cd admin_app && flutter analyze && flutter test
+# 56 passed
 ```
 
 Тесты бэкенда используют in-memory SQLite и не трогают рабочие файлы БД.
@@ -183,7 +165,7 @@ cd admin_app && flutter analyze && flutter test
 
 ## Безопасность
 
-- `.env`, токены, `*.db`, `target/`, `logs/` и `TG/data/` в репозиторий не попадают
+- `.env`, токены, `*.db`, `target/` и `logs/` в репозиторий не попадают
   (см. `.gitignore`).
 - Админ-API защищён `X-Admin-Token`; токен сравнивается за постоянное время.
 - В проде Swagger отключён, наружу открыты только 80/443.
@@ -193,7 +175,5 @@ cd admin_app && flutter analyze && flutter test
 
 ## Документация
 
-- [`bec/README.md`](bec/README.md) — API, конфигурация, миграции, логирование.
-- [`admin_app/AGENTS.md`](admin_app/AGENTS.md) — архитектура и конвенции Flutter-приложения.
-- [`TG/README.md`](TG/README.md) — правила именования файлов и работа бота.
-- `bec/.env.example`, `TG/.env.example` — шаблоны конфигурации.
+- [`bec/README.md`](bec/README.md) — API, веб-админка, конфигурация, миграции, логирование.
+- `bec/.env.example` — шаблон конфигурации.

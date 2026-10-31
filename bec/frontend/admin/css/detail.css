@@ -1,0 +1,28 @@
+/* =====================================================================
+   Админка — карточка авто, статус, фотографии.
+   ===================================================================== */
+
+.a-detail-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:22px;align-items:start}
+.a-detail-side .a-card{margin-bottom:22px}
+.a-specs{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 18px}
+.a-specs div{display:flex;flex-direction:column;gap:3px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.a-specs span{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.a-specs b{font-size:13.5px;font-weight:600;word-break:break-word}
+
+.a-danger-zone{border-color:rgba(214,58,46,.35)}
+.a-danger-zone .sec-tag{color:var(--sold)}
+
+/* ---------- галерея ---------- */
+.a-upload{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:18px;border-bottom:1px dashed var(--line)}
+.a-photos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.a-photo{position:relative;aspect-ratio:4/3;border-radius:4px;overflow:hidden;border:1px solid var(--line);background:var(--bg2)}
+.a-photo.is-cover{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.a-photo img{width:100%;height:100%;object-fit:cover}
+.a-cover-badge{position:absolute;top:8px;left:8px;background:var(--acc);color:#fff;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;padding:4px 7px;border-radius:2px}
+.a-photo-tools{position:absolute;left:6px;right:6px;bottom:6px;display:flex;gap:5px;justify-content:flex-end;opacity:0;transition:opacity .2s}
+.a-photo:hover .a-photo-tools,.a-photo:focus-within .a-photo-tools{opacity:1}
+.a-photo-tools form{display:flex}
+
+@media (hover: none){
+  .a-photo-tools{opacity:1}
+}

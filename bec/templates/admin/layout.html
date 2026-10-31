@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ page_title }} · БЕРЕГ</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ui/css/base.css">
+<link rel="stylesheet" href="/admin/assets/css/admin.css">
+<link rel="stylesheet" href="/admin/assets/css/table.css">
+<link rel="stylesheet" href="/admin/assets/css/form.css">
+<link rel="stylesheet" href="/admin/assets/css/detail.css">
+<link rel="stylesheet" href="/admin/assets/css/responsive.css">
+<script src="/ui/vendor/htmx.min.js" defer></script>
+<script src="/admin/assets/js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+<div class="noise" aria-hidden="true"></div>
+
+<div class="ticker" aria-hidden="true">
+  <div class="tick-track">
+    <div class="tick-set">
+      <span>Панель управления · БЕРЕГ</span><span class="tick-sep">///</span>
+      <span>Порт Владивосток · VLAT (UTC+10)</span><span class="tick-sep">///</span>
+      <span>Все изменения сразу видны на сайте</span><span class="tick-sep">///</span>
+    </div>
+    <div class="tick-set">
+      <span>Панель управления · БЕРЕГ</span><span class="tick-sep">///</span>
+      <span>Порт Владивосток · VLAT (UTC+10)</span><span class="tick-sep">///</span>
+      <span>Все изменения сразу видны на сайте</span><span class="tick-sep">///</span>
+    </div>
+  </div>
+</div>
+
+<header class="a-header" id="hdr">
+  <div class="container a-header-in">
+    <a class="logo" href="/admin/">
+      <div class="logo-mark">Б</div>
+      <div class="logo-txt"><b>БЕРЕГ</b><small>Управление каталогом</small></div>
+    </a>
+    <nav class="a-nav">
+      <a href="/admin/" class="{% if nav == "dashboard" %}on{% endif %}">Обзор</a>
+      <a href="/admin/cars" class="{% if nav == "cars" %}on{% endif %}">Автомобили</a>
+      <a href="/admin/cars/new" class="{% if nav == "new" %}on{% endif %}">Добавить</a>
+      <a href="/ui/" target="_blank" rel="noopener">Сайт ↗</a>
+    </nav>
+    <form method="post" action="/admin/logout" class="a-logout">
+      <button type="submit" class="a-link-btn">Выйти</button>
+    </form>
+  </div>
+</header>
+
+<main class="a-main container">
+{% block content %}{% endblock %}
+</main>
+
+<div id="adminToast" class="a-toast" aria-live="polite" aria-atomic="true"></div>
+
+<footer class="a-footer">
+  <div class="container a-footer-in">
+    <span>БЕРЕГ · панель управления</span>
+    <span>Данные и разметка — с сервера · htmx</span>
+  </div>
+</footer>
+</body>
+</html>

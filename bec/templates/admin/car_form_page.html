@@ -1,0 +1,18 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="a-page-head">
+  <div>
+    <span class="sec-tag">{% if is_edit %}02 / Редактирование{% else %}02 / Новое авто{% endif %}</span>
+    <h1 class="a-h1">{% if is_edit %}Изменить автомобиль{% else %}Добавить автомобиль{% endif %}</h1>
+  </div>
+  <div class="a-page-actions">
+    {% if is_edit %}
+    <a class="a-btn a-btn-ghost" href="/admin/cars/{{ car_id.unwrap_or(0) }}">← К карточке</a>
+    {% else %}
+    <a class="a-btn a-btn-ghost" href="/admin/cars">← К списку</a>
+    {% endif %}
+  </div>
+</div>
+
+{% include "admin/partials/car_form.html" %}
+{% endblock %}

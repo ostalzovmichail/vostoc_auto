@@ -1,4 +1,3 @@
-pub mod admin;
 pub mod basic;
 pub mod cars;
 // AI-функции: генерация текстов через OpenRouter (защищены админ-токеном).

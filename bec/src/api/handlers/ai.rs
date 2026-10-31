@@ -75,6 +75,18 @@ pub async fn describe_handler(
     State(state): State<AppState>,
     Json(request): Json<DescribeCarRequest>,
 ) -> Result<Json<DescribeCarResponse>, ApiResult> {
+    let (text, model) = describe_car(&state, &request).await?;
+    Ok(Json(DescribeCarResponse { text, model }))
+}
+
+/// Общая точка генерации описания для JSON API и HTML-админки.
+///
+/// Проверяет наличие ключа, валидирует запрос и обращается к OpenRouter.
+/// Возвращает готовый текст и имя модели.
+pub async fn describe_car(
+    state: &AppState,
+    request: &DescribeCarRequest,
+) -> Result<(String, String), ApiResult> {
     // Без ключа на сервере AI не работает — это настройка, а не сбой,
     // поэтому 503, а не 500.
     let Some(api_key) = state.config.openrouter_api_key.as_deref() else {
@@ -84,13 +96,13 @@ pub async fn describe_handler(
         ));
     };
 
-    validate(&request)?;
+    validate(request)?;
 
     let model = state.config.openrouter_model.clone();
-    let text = generate_description(&state, api_key, &request).await?;
+    let text = generate_description(state, api_key, request).await?;
 
     tracing::info!(brand = %request.brand, model = %model, "Описание автомобиля сгенерировано");
-    Ok(Json(DescribeCarResponse { text, model }))
+    Ok((text, model))
 }
 
 /// Проверка обязательных полей: пустые характеристики дают бессмысленный текст.

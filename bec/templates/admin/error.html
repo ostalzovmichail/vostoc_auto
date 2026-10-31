@@ -1,0 +1,13 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="a-page-head">
+  <div>
+    <span class="sec-tag">Ошибка</span>
+    <h1 class="a-h1">{{ page_title }}</h1>
+  </div>
+</div>
+<div class="a-card">
+  <div class="a-alert a-alert-error">{{ message }}</div>
+  <a class="a-btn a-btn-ghost" href="/admin/">← На дашборд</a>
+</div>
+{% endblock %}

@@ -1,4 +1,6 @@
-use crate::core::models::{Car, CarFilter, Contact, NewCar, Stats, StatusUpdate, VisitStats};
+use crate::core::models::{
+    AdminCarFilter, Car, CarFilter, CarUpdate, Contact, NewCar, Stats, StatusUpdate, VisitStats,
+};
 use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
 use std::time::Duration;
 
@@ -55,13 +57,11 @@ pub trait Database: Send + Sync {
 
     // ── Админ-API: управление каталогом ────────────────────────────────────
 
-    /// Все автомобили, включая проданные. `status = None` — без фильтра.
-    async fn admin_list_cars(
-        &self,
-        status: Option<&str>,
-        limit: i64,
-        offset: i64,
-    ) -> Result<Vec<Car>, sqlx::Error>;
+    /// Все автомобили, включая проданные, с поиском и сортировкой.
+    async fn admin_filter_cars(&self, filter: &AdminCarFilter) -> Result<Vec<Car>, sqlx::Error>;
+
+    /// Общее число автомобилей под фильтром — для пагинации админки.
+    async fn admin_cars_total(&self, filter: &AdminCarFilter) -> Result<i64, sqlx::Error>;
 
     /// Один автомобиль по внутреннему `id`.
     async fn car_by_id(&self, id: i64) -> Result<Option<Car>, sqlx::Error>;
@@ -71,6 +71,9 @@ pub trait Database: Send + Sync {
 
     /// Создаёт автомобиль и возвращает его с присвоенным `id`.
     async fn create_car(&self, new: &NewCar) -> Result<Car, sqlx::Error>;
+
+    /// Обновляет характеристики автомобиля (кроме статуса). `None`, если авто нет.
+    async fn update_car(&self, id: i64, update: &CarUpdate) -> Result<Option<Car>, sqlx::Error>;
 
     /// Меняет статус. При переводе в `sold` проставляет дату продажи и срок
     /// сделки; при возврате из `sold` — очищает их. `None`, если авто нет.
@@ -89,6 +92,14 @@ pub trait Database: Send + Sync {
 
     /// Удаляет фото по URL. Возвращает `false`, если такого фото не было.
     async fn delete_car_image(&self, car_id: i64, url: &str) -> Result<bool, sqlx::Error>;
+
+    /// Переупорядочивает галерею. Первый URL становится обложкой.
+    /// `false`, если набор URL не совпадает с текущей галереей.
+    async fn reorder_car_images(
+        &self,
+        car_id: i64,
+        ordered: &[String],
+    ) -> Result<bool, sqlx::Error>;
 }
 
 /// Реализация [`Database`] поверх пула соединений SQLite.
@@ -128,6 +139,41 @@ impl SqliteDb {
             car.images = rows.into_iter().map(|(url,)| url).collect();
         }
         Ok(())
+    }
+}
+
+/// Добавляет в `QueryBuilder` условия админского фильтра.
+///
+/// Отдельная функция, чтобы одинаковые условия использовались и в выборке,
+/// и в подсчёте общего числа — иначе пагинация разъедется с данными.
+fn push_admin_conditions(
+    query: &mut sqlx::QueryBuilder<'_, sqlx::Sqlite>,
+    filter: &AdminCarFilter,
+) {
+    if let Some(status) = filter
+        .status
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        query.push(" AND status = ").push_bind(status.to_string());
+    }
+
+    if let Some(needle) = filter
+        .query
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        let like = format!("%{}%", needle.to_lowercase());
+        query
+            .push(" AND (lower(brand) LIKE ")
+            .push_bind(like.clone())
+            .push(" OR lower(model) LIKE ")
+            .push_bind(like.clone())
+            .push(" OR lower(lot_number) LIKE ")
+            .push_bind(like)
+            .push(")");
     }
 }
 
@@ -348,39 +394,39 @@ impl Database for SqliteDb {
         .await
     }
 
-    async fn admin_list_cars(
-        &self,
-        status: Option<&str>,
-        limit: i64,
-        offset: i64,
-    ) -> Result<Vec<Car>, sqlx::Error> {
-        // Отличие от `list_cars`: без фильтра отдаём ВСЁ, включая проданные —
-        // админке нужен полный список для управления.
-        let mut cars = match status {
-            Some(status) => {
-                sqlx::query_as::<_, Car>(
-                    "SELECT * FROM cars WHERE status = ? \
-                     ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
-                )
-                .bind(status)
-                .bind(limit)
-                .bind(offset)
-                .fetch_all(&self.pool)
-                .await
-            }
-            None => {
-                sqlx::query_as::<_, Car>(
-                    "SELECT * FROM cars ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
-                )
-                .bind(limit)
-                .bind(offset)
-                .fetch_all(&self.pool)
-                .await
-            }
-        }?;
+    async fn admin_filter_cars(&self, filter: &AdminCarFilter) -> Result<Vec<Car>, sqlx::Error> {
+        let mut query = sqlx::QueryBuilder::<sqlx::Sqlite>::new("SELECT * FROM cars WHERE 1 = 1");
+        push_admin_conditions(&mut query, filter);
 
+        // Сортировка выбирается из белого списка — пользовательский ввод
+        // никогда не попадает в SQL как фрагмент текста.
+        let order = match filter.sort.as_deref() {
+            Some("price-asc") => " ORDER BY price_rub ASC, id DESC",
+            Some("price-desc") => " ORDER BY price_rub DESC, id DESC",
+            Some("mileage") => " ORDER BY mileage ASC, id DESC",
+            Some("sold") => " ORDER BY COALESCE(sold_at, created_at) DESC, id DESC",
+            _ => " ORDER BY created_at DESC, id DESC",
+        };
+        query.push(order);
+        query
+            .push(" LIMIT ")
+            .push_bind(filter.limit)
+            .push(" OFFSET ")
+            .push_bind(filter.offset);
+
+        let mut cars = query.build_query_as::<Car>().fetch_all(&self.pool).await?;
         self.attach_images(&mut cars).await?;
         Ok(cars)
+    }
+
+    async fn admin_cars_total(&self, filter: &AdminCarFilter) -> Result<i64, sqlx::Error> {
+        let mut query =
+            sqlx::QueryBuilder::<sqlx::Sqlite>::new("SELECT COUNT(*) FROM cars WHERE 1 = 1");
+        push_admin_conditions(&mut query, filter);
+        query
+            .build_query_scalar::<i64>()
+            .fetch_one(&self.pool)
+            .await
     }
 
     async fn car_by_id(&self, id: i64) -> Result<Option<Car>, sqlx::Error> {
@@ -456,6 +502,36 @@ impl Database for SqliteDb {
         self.car_by_id(result.last_insert_rowid())
             .await?
             .ok_or(sqlx::Error::RowNotFound)
+    }
+
+    async fn update_car(&self, id: i64, update: &CarUpdate) -> Result<Option<Car>, sqlx::Error> {
+        if self.car_by_id(id).await?.is_none() {
+            return Ok(None);
+        }
+
+        sqlx::query(
+            "UPDATE cars SET lot_number = ?, brand = ?, model = ?, year = ?, mileage = ?, \
+             engine = ?, transmission = ?, drive = ?, price_rub = ?, auction_price_yen = ?, \
+             auction_name = ?, auction_lot = ?, rating = ? WHERE id = ?",
+        )
+        .bind(&update.lot_number)
+        .bind(&update.brand)
+        .bind(&update.model)
+        .bind(update.year)
+        .bind(update.mileage)
+        .bind(&update.engine)
+        .bind(&update.transmission)
+        .bind(&update.drive)
+        .bind(update.price_rub)
+        .bind(update.auction_price_yen)
+        .bind(&update.auction_name)
+        .bind(&update.auction_lot)
+        .bind(&update.rating)
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+
+        self.car_by_id(id).await
     }
 
     async fn set_car_status(
@@ -584,6 +660,57 @@ impl Database for SqliteDb {
         .execute(&self.pool)
         .await?;
 
+        Ok(true)
+    }
+
+    async fn reorder_car_images(
+        &self,
+        car_id: i64,
+        ordered: &[String],
+    ) -> Result<bool, sqlx::Error> {
+        let mut current: Vec<String> =
+            sqlx::query_scalar("SELECT url FROM car_images WHERE car_id = ? ORDER BY position")
+                .bind(car_id)
+                .fetch_all(&self.pool)
+                .await?;
+
+        // Набор URL должен совпадать: иначе клиент прислал чужое фото или
+        // потерял часть галереи — менять порядок в таком случае нельзя.
+        let mut expected = current.clone();
+        expected.sort();
+        let mut proposed = ordered.to_vec();
+        proposed.sort();
+        if expected != proposed || current.len() != ordered.len() {
+            return Ok(false);
+        }
+        current.clear();
+
+        let mut tx = self.pool.begin().await?;
+        // Сдвигаем позиции в отрицательные, чтобы не нарушить UNIQUE(car_id, position)
+        // при перестановке. Затем раскладываем по новым индексам.
+        sqlx::query("UPDATE car_images SET position = -(position + 1) WHERE car_id = ?")
+            .bind(car_id)
+            .execute(&mut *tx)
+            .await?;
+
+        for (position, url) in ordered.iter().enumerate() {
+            sqlx::query("UPDATE car_images SET position = ? WHERE car_id = ? AND url = ?")
+                .bind(position as i64)
+                .bind(car_id)
+                .bind(url)
+                .execute(&mut *tx)
+                .await?;
+        }
+
+        // Колонка image_url — устаревшая копия обложки; держим её в синхроне,
+        // чтобы внешние клиенты JSON API видели актуальное первое фото.
+        sqlx::query("UPDATE cars SET image_url = ? WHERE id = ?")
+            .bind(ordered.first())
+            .bind(car_id)
+            .execute(&mut *tx)
+            .await?;
+
+        tx.commit().await?;
         Ok(true)
     }
 }

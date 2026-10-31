@@ -24,10 +24,9 @@
       {% endif %}
     </div>
     {% endif %}
-    {% if contact.has_whatsapp() || contact.has_telegram() || contact.has_youtube() %}
+    {% if contact.has_whatsapp() || contact.has_youtube() %}
     <div class="messengers">
       {% if contact.has_whatsapp() %}<a class="m-chip" href="{{ contact.whatsapp_href() }}">✆ WhatsApp</a>{% endif %}
-      {% if contact.has_telegram() %}<a class="m-chip" href="{{ contact.telegram_href() }}">✈ Telegram</a>{% endif %}
       {% if contact.has_youtube() %}<a class="m-chip" href="{{ contact.youtube_href() }}">▶ YouTube-обзоры</a>{% endif %}
     </div>
     {% endif %}

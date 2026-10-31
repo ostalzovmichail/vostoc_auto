@@ -1,0 +1,40 @@
+<section id="statusCard" class="a-card">
+  <div class="a-card-head">
+    <div>
+      <span class="sec-tag">Статус</span>
+      <h2 class="a-h2">Положение на площадке</h2>
+    </div>
+    <span class="chip {{ car.status_class() }}"><i></i>{{ car.status_ru() }}</span>
+  </div>
+
+  <form method="post" action="/admin/cars/{{ car.id }}/status" class="a-form"
+        hx-post="/admin/cars/{{ car.id }}/status" hx-target="#statusCard" hx-swap="outerHTML">
+    <div class="a-form-grid">
+      <label class="a-field">
+        <span class="a-label">Статус</span>
+        <select class="a-input a-select" name="status">
+          <option value="stock" {% if car.status == "stock" %}selected{% endif %}>В наличии</option>
+          <option value="transit" {% if car.status == "transit" %}selected{% endif %}>В пути</option>
+          <option value="order" {% if car.status == "order" %}selected{% endif %}>Под заказ</option>
+          <option value="sold" {% if car.status == "sold" %}selected{% endif %}>Продан</option>
+        </select>
+      </label>
+      <label class="a-field">
+        <span class="a-label">Срок доставки, дней</span>
+        <input class="a-input" name="transit_days" value="{{ car.transit_days_value() }}" inputmode="numeric">
+      </label>
+      <label class="a-field">
+        <span class="a-label">Город доставки</span>
+        <input class="a-input" name="delivery_city" value="{{ car.delivery_city_value() }}">
+      </label>
+    </div>
+
+    {% if car.status == "sold" %}
+    <p class="a-note">Продан {{ car.sold_date_display() }} · срок сделки: {{ car.deal_duration_display() }} · доставка: {{ car.delivery_city_display() }}</p>
+    {% endif %}
+
+    <div class="a-form-actions">
+      <button type="submit" class="a-btn a-btn-solid">Сохранить статус</button>
+    </div>
+  </form>
+</section>

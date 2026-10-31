@@ -64,10 +64,15 @@ async fn main() {
     // 6. Запуск. with_graceful_shutdown даёт время дообработать текущие
     // запросы по SIGINT/SIGTERM (Ctrl+C или остановка контейнера) —
     // без этого соединения обрываются, а ответы теряются.
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
-        .await
-        .expect("Сервер неожиданно завершил работу");
+    // `into_make_service_with_connect_info` даёт обработчикам IP клиента:
+    // он нужен лимитеру попыток входа в веб-админку.
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await
+    .expect("Сервер неожиданно завершил работу");
 }
 
 /// Ожидает сигнал завершения: Ctrl+C (все ОС) или SIGTERM (Unix).

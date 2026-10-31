@@ -1,0 +1,63 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="a-page-head">
+  <div>
+    <span class="sec-tag">03 / Карточка · лот #{{ car.lot_number }}</span>
+    <h1 class="a-h1">{{ car.title_with_year() }}</h1>
+  </div>
+  <div class="a-page-actions">
+    <a class="a-btn a-btn-ghost" href="/ui/#stock" target="_blank" rel="noopener">На сайте ↗</a>
+    <a class="a-btn a-btn-solid" href="/admin/cars/{{ car.id }}/edit">Редактировать</a>
+  </div>
+</div>
+
+<div class="a-detail-grid">
+  <div class="a-detail-main">
+    <section class="a-card">
+      <div class="a-card-head">
+        <div>
+          <span class="sec-tag">Характеристики</span>
+          <h2 class="a-h2">Автомобиль</h2>
+        </div>
+        <span class="chip {{ car.status_class() }}"><i></i>{{ car.status_ru() }}</span>
+      </div>
+
+      <div class="a-specs">
+        <div><span>Марка и модель</span><b>{{ car.title() }}</b></div>
+        <div><span>Год</span><b>{{ car.year }}</b></div>
+        <div><span>Пробег</span><b>{{ car.mileage_display() }}</b></div>
+        <div><span>Двигатель</span><b>{{ car.engine }}</b></div>
+        <div><span>КПП</span><b>{{ car.transmission }}</b></div>
+        <div><span>Привод</span><b>{{ car.drive }}</b></div>
+        <div><span>Цена</span><b>{{ car.price_display() }}</b></div>
+        <div><span>Лот</span><b>#{{ car.lot_number }}</b></div>
+        <div><span>Аукцион</span><b>{{ car.auction_name_display() }}</b></div>
+        <div><span>Лот аукциона</span><b>{{ car.auction_lot_display() }}</b></div>
+        <div><span>Оценка</span><b>{{ car.rating_display() }}</b></div>
+        <div><span>Цена аукциона</span><b>{% if car.auction_price_yen.is_some() %}{{ car.auction_price_display() }}{% else %}—{% endif %}</b></div>
+        <div><span>Добавлено</span><b>{{ car.created_display() }}</b></div>
+        <div><span>Продано</span><b>{{ car.sold_date_display() }}</b></div>
+        <div><span>Город доставки</span><b>{{ car.delivery_city_display() }}</b></div>
+        <div><span>Срок сделки</span><b>{{ car.deal_duration_display() }}</b></div>
+      </div>
+    </section>
+
+    {% include "admin/partials/status_card.html" %}
+  </div>
+
+  <aside class="a-detail-side">
+    {% include "admin/partials/photos_grid.html" %}
+
+    <section class="a-card a-danger-zone">
+      <span class="sec-tag">Опасное действие</span>
+      <h2 class="a-h2">Удалить автомобиль</h2>
+      <p class="a-muted">Запись и все фотографии будут удалены с диска. Вернуть их нельзя.</p>
+      <form method="post" action="/admin/cars/{{ car.id }}/delete"
+            hx-post="/admin/cars/{{ car.id }}/delete"
+            hx-confirm="Удалить {{ car.title() }} вместе со всеми фото?">
+        <button type="submit" class="a-btn a-btn-danger a-btn-block">Удалить авто</button>
+      </form>
+    </section>
+  </aside>
+</div>
+{% endblock %}

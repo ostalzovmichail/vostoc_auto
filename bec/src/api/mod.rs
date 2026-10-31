@@ -1,8 +1,10 @@
+pub mod admin;
 pub mod handlers;
 pub mod models;
 pub mod router;
 pub mod templates;
 
+use crate::api::admin::session::LoginLimiter;
 use crate::core::config::Config;
 use crate::core::db::Database;
 use std::sync::Arc;
@@ -15,6 +17,8 @@ use std::sync::Arc;
 pub struct AppState {
     pub db: Arc<dyn Database>,
     pub config: Arc<Config>,
+    /// Счётчик неудачных попыток входа в веб-админку.
+    pub login_limiter: Arc<LoginLimiter>,
 }
 
 impl AppState {
@@ -24,6 +28,7 @@ impl AppState {
         Self {
             db: Arc::new(db),
             config: Arc::new(config),
+            login_limiter: Arc::new(LoginLimiter::default()),
         }
     }
 }

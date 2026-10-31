@@ -1,0 +1,74 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="a-page-head">
+  <div>
+    <span class="sec-tag">01 / Обзор</span>
+    <h1 class="a-h1">Панель управления</h1>
+  </div>
+  <div class="a-page-actions">
+    <a class="a-btn a-btn-solid" href="/admin/cars/new">Добавить авто <span class="ar">→</span></a>
+  </div>
+</div>
+
+<div class="a-stats">
+  <div class="a-stat"><b>{{ stats.total }}</b><span>всего авто</span></div>
+  <div class="a-stat"><b>{{ stats.in_stock }}</b><span>в наличии</span></div>
+  <div class="a-stat"><b>{{ stats.in_transit }}</b><span>в пути</span></div>
+  <div class="a-stat"><b>{{ stats.on_order }}</b><span>под заказ</span></div>
+  <div class="a-stat"><b>{{ stats.sold }}</b><span>продано</span></div>
+</div>
+
+<div class="a-dash-grid">
+  <section class="a-card">
+    <div class="a-card-head">
+      <div>
+        <span class="sec-tag">02 / Сайт</span>
+        <h2 class="a-h2">Посещения</h2>
+      </div>
+    </div>
+    {% include "admin/partials/visits_card.html" %}
+  </section>
+
+  <section class="a-card">
+    <div class="a-card-head">
+      <div>
+        <span class="sec-tag">03 / Сделки</span>
+        <h2 class="a-h2">Срок продажи</h2>
+      </div>
+    </div>
+    {% if let Some(days) = avg_days %}
+    <div class="a-big-num">{{ days }} <small>дней</small></div>
+    <p class="a-muted">Средний срок сделки от поступления до продажи.</p>
+    {% else %}
+    <p class="a-muted">Проданных автомобилей пока нет — средний срок не рассчитан.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="a-card">
+  <div class="a-card-head">
+    <div>
+      <span class="sec-tag">04 / Последние</span>
+      <h2 class="a-h2">Недавно добавленные</h2>
+    </div>
+    <a class="a-link" href="/admin/cars">Все автомобили →</a>
+  </div>
+
+  {% if latest.is_empty() %}
+  <p class="a-empty">В каталоге пока нет автомобилей.</p>
+  {% else %}
+  <div class="a-latest">
+    {% for car in latest %}
+    <a class="a-latest-item" href="/admin/cars/{{ car.id }}">
+      <span class="a-latest-img">{% if !car.cover().is_empty() %}<img src="{{ car.cover() }}" alt="" loading="lazy">{% endif %}</span>
+      <span class="a-latest-body">
+        <b>{{ car.title() }}</b>
+        <small>№ {{ car.lot_number }} · {{ car.year }} · {{ car.price_display() }}</small>
+      </span>
+      <span class="chip {{ car.status_class() }}"><i></i>{{ car.status_ru() }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

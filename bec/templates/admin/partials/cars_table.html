@@ -1,0 +1,45 @@
+<div class="a-table-meta">
+  <span>Найдено: <b>{{ total }}</b></span>
+  {% if pages > 1 %}<span>Страница <b>{{ page }}</b> из <b>{{ pages }}</b></span>{% endif %}
+</div>
+
+{% if cars.is_empty() %}
+<p class="a-empty">Ничего не найдено — измените фильтр или поисковый запрос.</p>
+{% else %}
+<div class="a-table" role="table">
+  <div class="a-tr a-thead" role="row">
+    <span role="columnheader">Авто</span>
+    <span role="columnheader">Лот</span>
+    <span role="columnheader">Статус</span>
+    <span role="columnheader">Цена</span>
+    <span role="columnheader">Добавлено</span>
+    <span role="columnheader"></span>
+  </div>
+
+  {% for car in cars %}
+  <a class="a-tr" role="row" href="/admin/cars/{{ car.id }}">
+    <span class="a-td-car" role="cell">
+      <span class="a-thumb">{% if !car.cover().is_empty() %}<img src="{{ car.cover() }}" alt="" loading="lazy">{% endif %}</span>
+      <span class="a-car-name"><b>{{ car.title() }}</b><small>{{ car.year }} · {{ car.mileage_display() }} · {{ car.engine }}</small></span>
+    </span>
+    <span class="a-mono" role="cell">#{{ car.lot_number }}</span>
+    <span role="cell"><span class="chip {{ car.status_class() }}"><i></i>{{ car.status_ru() }}</span></span>
+    <span class="a-price" role="cell">{{ car.price_display() }}</span>
+    <span class="a-mono a-muted" role="cell">{{ car.created_display() }}</span>
+    <span class="a-row-arrow" role="cell">→</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if pages > 1 %}
+<nav class="a-pager" aria-label="Страницы">
+  <button type="button" class="a-btn a-btn-ghost" {% if page <= 1 %}disabled{% endif %}
+          hx-get="/admin/partials/cars" hx-include="#carsFilters" hx-target="#carsTable" hx-swap="innerHTML"
+          hx-vals='{"page": "{{ page - 1 }}"}'>← Назад</button>
+  <span class="a-mono">{{ page }} / {{ pages }}</span>
+  <button type="button" class="a-btn a-btn-ghost" {% if page >= pages %}disabled{% endif %}
+          hx-get="/admin/partials/cars" hx-include="#carsFilters" hx-target="#carsTable" hx-swap="innerHTML"
+          hx-vals='{"page": "{{ page + 1 }}"}'>Вперёд →</button>
+</nav>
+{% endif %}

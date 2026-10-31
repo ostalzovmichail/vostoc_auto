@@ -1,0 +1,7 @@
+<div id="visitsCard" class="a-visits" hx-get="/admin/partials/visits" hx-trigger="every 60s" hx-target="#visitsCard" hx-swap="outerHTML">
+  <div class="a-visit"><b>{{ visits.total }}</b><span>всего</span></div>
+  <div class="a-visit"><b>{{ visits.today }}</b><span>сегодня</span></div>
+  <div class="a-visit"><b>{{ visits.last_7_days }}</b><span>за 7 дней</span></div>
+  <button type="button" class="a-icon-btn" title="Обновить"
+          hx-get="/admin/partials/visits" hx-target="#visitsCard" hx-swap="outerHTML">↻</button>
+</div>

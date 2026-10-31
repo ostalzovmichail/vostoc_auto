@@ -1,0 +1,11 @@
+{% if let Some(message) = error %}
+<div class="a-alert a-alert-error" role="alert">{{ message }}</div>
+{% else %}
+<div class="a-ai-result">
+  <label class="a-field">
+    <span class="a-label">Описание из AI <small>· {{ model }}</small></span>
+    <textarea class="a-input a-textarea" rows="7" readonly>{% if let Some(value) = text %}{{ value }}{% endif %}</textarea>
+  </label>
+  <button type="button" class="a-btn a-btn-ghost" data-copy-ai>Скопировать</button>
+</div>
+{% endif %}
